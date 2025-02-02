@@ -1,17 +1,39 @@
-import mongoose from "mongoose";
+import mongoose, { Schema, Document } from "mongoose";
 
-export interface IUser {
-  email: string;
-  password: string;
-  _id?: string;
-  refreshToken?: string[];
+export enum SkillLevel {
+  BEGINNER = "Beginner",
+  INTERMEDIATE = "Intermediate",
+  ADVANCED = "Advanced",
 }
 
-const userSchema = new mongoose.Schema<IUser>({
+export interface IUser extends Document {
+  username: string;
+  skillLevel: SkillLevel;
+  email: string;
+  password: string;
+  refreshToken?: string[];
+  profile_img?: string;
+}
+
+const userSchema = new Schema<IUser>({
+  username: {
+    type: String,
+    required: true,
+    unique: true,
+    lowercase: true, // Ensures uniqueness is case-insensitive
+    trim: true, // Removes extra spaces
+  },
+  skillLevel: {
+    type: String,
+    enum: Object.values(SkillLevel),
+    default: SkillLevel.BEGINNER,
+  },
   email: {
     type: String,
     required: true,
     unique: true,
+    lowercase: true,
+    trim: true, 
   },
   password: {
     type: String,
@@ -20,7 +42,11 @@ const userSchema = new mongoose.Schema<IUser>({
   refreshToken: {
     type: [String],
     default: [],
-  }
+  },
+  profile_img: {
+    type: String,
+    default: "https://cdn-icons-png.flaticon.com/512/3135/3135715.png",
+  },
 });
 
 const userModel = mongoose.model<IUser>("Users", userSchema);
