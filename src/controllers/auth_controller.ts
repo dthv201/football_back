@@ -47,7 +47,8 @@ const login = async (req: Request, res: Response) => {
             return;
         }
 
-        const tokens = generateToken(user._id);
+        const tokens = generateToken(user._id.toString());
+        console.log("User ID type:", typeof user._id, user._id);
         if (tokens) {
             
             if (!user.refreshToken) {
@@ -203,9 +204,9 @@ const verifyRefreshToken = (refreshToken: string | undefined) => {
                     reject("fail");
                     return;
                 }
-                const tokens = user.refreshToken!.filter((token) => token !== refreshToken);
+                const tokens = user.refreshToken!.filter((token) => token !== refreshToken) || [];
                 user.refreshToken = tokens;
-
+                await user.save();
                 resolve(user);
             } catch (err) {
                 reject("fail");
