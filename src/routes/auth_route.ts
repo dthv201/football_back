@@ -65,18 +65,18 @@ router.post("/register", authController.register);
  *           schema:
  *             type: object
  *             properties:
- *               username:
+ *               email:
  *                 type: string
  *               password:
  *                 type: string
  *             required:
- *               - username
+ *               - email
  *               - password
  *     responses:
  *       200:
  *         description: User logged in successfully
  *       400:
- *         description: Invalid username or password
+ *         description: Invalid email or password
  *       500:
  *         description: Server error
  */

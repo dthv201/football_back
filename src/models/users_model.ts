@@ -19,10 +19,9 @@ export interface IUser {
 const userSchema = new Schema<IUser>({
   username: {
     type: String,
-    required: true,
     unique: true,
-    lowercase: true, // Ensures uniqueness is case-insensitive
-    trim: true, // Removes extra spaces
+    lowercase: true,
+    trim: true, 
   },
   skillLevel: {
     type: String,

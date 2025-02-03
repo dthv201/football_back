@@ -35,12 +35,15 @@ const login = async (req: Request, res: Response) => {
         }
 
         const user = await userModel.findOne({ email });
+        console.log("User found:", user);
+
         if (!user) {
             res.status(400).json({ error: 'Invalid credentials' });
             return;
         }
 
         const isPasswordValid = await bcrypt.compare(password, user.password);
+        console.log("Password Match:", isPasswordValid);
         if (!isPasswordValid) {
             res.status(400).json({ error: 'Invalid credentials' });
             return;
@@ -58,14 +61,14 @@ const login = async (req: Request, res: Response) => {
                 user.refreshToken = [];
             }
             user.refreshToken.push(tokens.refreshToken);
-            
+           
             await user.save();
-            
+            console.log("Generated Tokens:", tokens.accessToken, tokens.refreshToken);
             res.status(200).json({
                 accessToken: tokens.accessToken,
                 refreshToken: tokens.refreshToken,
                 user: {
-                    _id: user._id,
+                    _id: user._id.toString(),
                     username: user.username,
                     email: user.email,
                     skillLevel: user.skillLevel,
