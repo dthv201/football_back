@@ -25,10 +25,21 @@ const router = express.Router();
  *             properties:
  *               username:
  *                 type: string
- *               password:
- *                 type: string
+ *                 description: Username for the user
  *               email:
  *                 type: string
+ *                 description: User's email address 
+ *               password:
+ *                  type: string
+ *                  description: User's password
+ *               skillLevel:
+ *                  type: string
+ *                  enum: [Beginner, Intermediate, Advanced]
+ *                  description: User's skill level (optional, defaults to Beginner)
+ *              profile_img:
+ *                  type: string
+ *                  description: URL to user's profile image
+ *              
  *             required:
  *               - username
  *               - password

@@ -6,13 +6,14 @@ export enum SkillLevel {
   ADVANCED = "Advanced",
 }
 
-export interface IUser extends Document {
+export interface IUser {
   username: string;
-  skillLevel: SkillLevel;
+  skillLevel?: SkillLevel;
   email: string;
   password: string;
   refreshToken?: string[];
   profile_img?: string;
+  _id?: string;
 }
 
 const userSchema = new Schema<IUser>({
