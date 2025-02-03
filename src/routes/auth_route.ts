@@ -25,10 +25,21 @@ const router = express.Router();
  *             properties:
  *               username:
  *                 type: string
- *               password:
- *                 type: string
+ *                 description: Username for the user
  *               email:
  *                 type: string
+ *                 description: User's email address 
+ *               password:
+ *                  type: string
+ *                  description: User's password
+ *               skillLevel:
+ *                  type: string
+ *                  enum: [Beginner, Intermediate, Advanced]
+ *                  description: User's skill level (optional, defaults to Beginner)
+ *              profile_img:
+ *                  type: string
+ *                  description: URL to user's profile image
+ *              
  *             required:
  *               - username
  *               - password
@@ -54,18 +65,18 @@ router.post("/register", authController.register);
  *           schema:
  *             type: object
  *             properties:
- *               username:
+ *               email:
  *                 type: string
  *               password:
  *                 type: string
  *             required:
- *               - username
+ *               - email
  *               - password
  *     responses:
  *       200:
  *         description: User logged in successfully
  *       400:
- *         description: Invalid username or password
+ *         description: Invalid email or password
  *       500:
  *         description: Server error
  */

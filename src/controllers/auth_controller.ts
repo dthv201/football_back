@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
-import userModel, { IUser } from '../models/users_model';
+import userModel, { IUser, SkillLevel } from '../models/users_model';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { Document } from 'mongoose';
@@ -10,8 +10,12 @@ const register = async (req: Request, res: Response) => {
         const hashedPassword = await bcrypt.hash(req.body.password, salt);
 
         const user = await userModel.create({
+            username: req.body.username,
+            skillLevel: req.body.skillLevel || SkillLevel.BEGINNER,
             email: req.body.email,
             password: hashedPassword,
+            profile_img: req.body.profile_img || "https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
+
         });
 
         res.status(201).json({ message: 'User registered successfully', user });
@@ -31,12 +35,15 @@ const login = async (req: Request, res: Response) => {
         }
 
         const user = await userModel.findOne({ email });
+        console.log("User found:", user);
+
         if (!user) {
             res.status(400).json({ error: 'Invalid credentials' });
             return;
         }
 
         const isPasswordValid = await bcrypt.compare(password, user.password);
+        console.log("Password Match:", isPasswordValid);
         if (!isPasswordValid) {
             res.status(400).json({ error: 'Invalid credentials' });
             return;
@@ -54,13 +61,19 @@ const login = async (req: Request, res: Response) => {
                 user.refreshToken = [];
             }
             user.refreshToken.push(tokens.refreshToken);
-            
+           
             await user.save();
-            
+            console.log("Generated Tokens:", tokens.accessToken, tokens.refreshToken);
             res.status(200).json({
                 accessToken: tokens.accessToken,
                 refreshToken: tokens.refreshToken,
-                _id: user._id,
+                user: {
+                    _id: user._id.toString(),
+                    username: user.username,
+                    email: user.email,
+                    skillLevel: user.skillLevel,
+                    profile_img: user.profile_img,
+                },
             });
         }
 
