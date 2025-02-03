@@ -27,6 +27,7 @@ type User = IUser & {
 };
 
 const testUser: User = {
+  username: "testuser",
   email: "test@user.com",
   password: "testpassword",
 }
@@ -60,15 +61,18 @@ describe("Auth Tests", () => {
     expect(response2.statusCode).not.toBe(200);
   });
 
-
+//problem here
   test("Auth test login", async () => {
-    const response = await request(app).post(baseUrl + "/login").send(testUser);
+    const response = await request(app).post(baseUrl + "/login").send({
+      email: testUser.email,
+      password: testUser.password
+    });
     expect(response.statusCode).toBe(200);
     const accessToken = response.body.accessToken;
     const refreshToken = response.body.refreshToken;
     expect(accessToken).toBeDefined();
     expect(refreshToken).toBeDefined();
-    expect(response.body._id).toBeDefined();
+    expect(response.body.user._id).toBeDefined();
     testUser.accessToken = accessToken;
     testUser.refreshToken = refreshToken;
     testUser._id = response.body._id;
@@ -112,7 +116,7 @@ describe("Auth Tests", () => {
     expect(response3.statusCode).toBe(400);
     expect(response3.body).toHaveProperty("error");
   });
-
+//problem here
   test("Auth test me", async () => {
     const response = await request(app).post("/posts").send({
       title: "Test Post",
@@ -129,7 +133,7 @@ describe("Auth Tests", () => {
     });
     expect(response2.statusCode).toBe(201);
   });
-
+//problem here
   test("Test refresh token", async () => {
     const response = await request(app).post(baseUrl + "/refresh").send({
       refreshToken: testUser.refreshToken,
@@ -140,7 +144,7 @@ describe("Auth Tests", () => {
     testUser.accessToken = response.body.accessToken;
     testUser.refreshToken = response.body.refreshToken;
   });
-
+//problem here
   test("Double use refresh token", async () => {
     const response = await request(app).post(baseUrl + "/refresh").send({
       refreshToken: testUser.refreshToken,
@@ -158,7 +162,7 @@ describe("Auth Tests", () => {
     });
     expect(response3.statusCode).not.toBe(200);
   });
-
+//problem here
   test("Fail to refresh with invalid token", async () => {
     const response = await request(app).post(`${baseUrl}/refresh`).send({
       refreshToken: "invalidToken",
