@@ -6,15 +6,31 @@ import { Document } from 'mongoose';
 
 const register = async (req: Request, res: Response) => {
     try {
+
+        const { username, email, password, skillLevel, profile_img } = req.body;
+        const existEmail =  await userModel.findOne({ email });
+
+        if (existEmail) {
+            res.status(400).json({ error: 'Email already exists' });
+            return;
+        }
+
+        const existingUsername =  await userModel.findOne({ username });
+
+        if (existingUsername) {
+            res.status(400).json({ error: 'Username already exists' });
+            return;
+        }
+
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(req.body.password, salt);
 
         const user = await userModel.create({
-            username: req.body.username,
-            skillLevel: req.body.skillLevel || SkillLevel.BEGINNER,
-            email: req.body.email,
+            username: username,
+            skillLevel: skillLevel|| SkillLevel.BEGINNER,
+            email: email,
             password: hashedPassword,
-            profile_img: req.body.profile_img || "https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
+            profile_img: profile_img|| "https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
 
         });
 

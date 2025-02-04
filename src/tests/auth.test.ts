@@ -40,6 +40,26 @@ describe("Auth Tests", () => {
     expect(response.body.user.email).toBe(testUser.email);
   });
 
+  test("Register user with same username", async () => {
+    const response = await request(app).post(baseUrl + "/register").send({
+      username: "testuser",
+      email: "test2@user.com",
+      password: "testpassword2",
+    });
+    expect(response.statusCode).toBe(400);
+    expect(response.body).toHaveProperty("error");
+  });
+
+  test("Register user with same email", async () => {
+    const response = await request(app).post(baseUrl + "/register").send({
+      username: "testuser2",
+      email: "test@user.com",
+      password: "testpassword2",
+    });
+    expect(response.statusCode).toBe(400);
+    expect(response.body).toHaveProperty("error");
+  });
+
 
   test("Fail to register with missing fields", async () => {
     const response = await request(app).post(`${baseUrl}/register`).send({
