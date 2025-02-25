@@ -7,6 +7,10 @@ import { Document } from 'mongoose';
 const register = async (req: Request, res: Response) => {
     try {
 
+        console.log("Received Registration Request");
+        console.log("Body:", req.body);
+        console.log("File:", req.file);
+        
         const { username, email, password, skillLevel, profile_img } = req.body;
         const existEmail =  await userModel.findOne({ email });
 
@@ -35,6 +39,7 @@ const register = async (req: Request, res: Response) => {
         });
 
         res.status(201).json({ message: 'User registered successfully', user });
+        res.json({ message: "User registered successfully" });
     } catch (err) {
         res.status(400).json({ error: 'Registration failed', details: err });
     }
