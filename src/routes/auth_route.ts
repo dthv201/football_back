@@ -1,6 +1,7 @@
 import express from "express";
 import multer from "multer";
 import authController from "../controllers/auth_controller";
+import { register } from "../controllers/auth_controller";
 
 const router = express.Router();
 
@@ -63,8 +64,7 @@ const upload = multer({ storage: storage });
  *       400:
  *         description: Bad request (validation error)
  */
-router.post("/register", upload.single("profile_img"), authController.register);
-
+router.post("/register", upload.single("profile_img"), register);
 /**
  * @swagger
  * /auth/login:

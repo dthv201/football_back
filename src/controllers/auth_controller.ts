@@ -1,25 +1,45 @@
 import { NextFunction, Request, Response } from 'express';
+import multer from 'multer';
 import userModel, { IUser, SkillLevel } from '../models/users_model';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { Document } from 'mongoose';
+const upload = multer();
 
-const register = async (req: Request, res: Response) => {
+
+export const register = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
+        console.log("📥 Received Registration Request");
+        console.log("🔹 Request Body:", req.body);
+        console.log("🔹 Request File:", req.file);
 
         console.log("Received Registration Request");
         console.log("Body:", req.body);
         console.log("File:", req.file);
-        
-        const { username, email, password, skillLevel, profile_img } = req.body;
-        const existEmail =  await userModel.findOne({ email });
+
+     
+        const { username, email, password, skillLevel } = req.body;
+
+        if (!username || !email || !password) {
+            res.status(400).json({ error: "Username, email, and password are required" });
+            return;
+        }
+
+
+        const existEmail = await userModel.findOne({ email });
+
+        if (!req.file) {
+            res.status(400).json({ message: "File upload failed!" });
+            return;
+            
+        }
 
         if (existEmail) {
             res.status(400).json({ error: 'Email already exists' });
             return;
         }
 
-        const existingUsername =  await userModel.findOne({ username });
+        const existingUsername = await userModel.findOne({ username });
 
         if (existingUsername) {
             res.status(400).json({ error: 'Username already exists' });
@@ -27,21 +47,26 @@ const register = async (req: Request, res: Response) => {
         }
 
         const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(req.body.password, salt);
+        const hashedPassword = await bcrypt.hash(password, salt);
+
+        // ✅ Fix: Correctly use uploaded file
+        const profileImageUrl = req.file ? `/uploads/${req.file.filename}` : '';
 
         const user = await userModel.create({
-            username: username,
-            skillLevel: skillLevel|| SkillLevel.BEGINNER,
-            email: email,
+            username,
+            skillLevel: skillLevel || SkillLevel.BEGINNER,
+            email,
             password: hashedPassword,
-            profile_img: profile_img|| "https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
-
+            profile_img: profileImageUrl
         });
 
+        console.log("✅ User registered successfully:", user);
         res.status(201).json({ message: 'User registered successfully', user });
-        res.json({ message: "User registered successfully" });
+
     } catch (err) {
+      
         res.status(400).json({ error: 'Registration failed', details: err });
+        next(err);
     }
 };
 
@@ -278,7 +303,6 @@ export const authMiddleware = (req: Request, res: Response, next: NextFunction) 
 };
 
 export default {
-    register,
     login,
     refresh,
     logout
