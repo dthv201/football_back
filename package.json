@@ -9,6 +9,7 @@
     "test": "jest --detectOpenHandles --forceExit",
     "testPost": "jest --detectOpenHandles --forceExit posts.test.ts",
     "testComment": "jest --detectOpenHandles --forceExit coments.test.ts",
+    "testTeam": "jest --detectOpenHandles --forceExit teams.test.ts",
     "testAuth": "jest --detectOpenHandles --forceExit auth.test.ts"
   },
   "repository": {
