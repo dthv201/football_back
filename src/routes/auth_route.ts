@@ -1,7 +1,22 @@
 import express from "express";
+import multer from "multer";
 import authController from "../controllers/auth_controller";
+import { register } from "../controllers/auth_controller";
 
 const router = express.Router();
+
+// Multer setup
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+        const uploadPath = process.env.NODE_ENV === "test" ? "uploads/test" : "uploads";
+        cb(null, uploadPath);
+  },
+  filename: function (req, file, cb) {
+    const ext = file.originalname.split('.').pop();
+    cb(null, `${Date.now()}.${ext}`); 
+  }
+});
+const upload = multer({ storage: storage });
 
 /**
  * @swagger
@@ -19,7 +34,7 @@ const router = express.Router();
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
  *             type: object
  *             properties:
@@ -30,16 +45,16 @@ const router = express.Router();
  *                 type: string
  *                 description: User's email address 
  *               password:
- *                  type: string
- *                  description: User's password
+ *                 type: string
+ *                 description: User's password
  *               skillLevel:
- *                  type: string
- *                  enum: [Beginner, Intermediate, Advanced]
- *                  description: User's skill level (optional, defaults to Beginner)
- *              profile_img:
- *                  type: string
- *                  description: URL to user's profile image
- *              
+ *                 type: string
+ *                 enum: [Beginner, Intermediate, Advanced]
+ *                 description: User's skill level (optional, defaults to Beginner)
+ *               profile_img:
+ *                 type: string
+ *                 format: binary
+ *                 description: User's profile image
  *             required:
  *               - username
  *               - password
@@ -48,10 +63,20 @@ const router = express.Router();
  *       201:
  *         description: User registered successfully
  *       400:
- *         description: Bad request
+ *         description: Bad request (validation error)
  */
-router.post("/register", authController.register);
+router.post("/register", (req, res, next) => {
+  upload.single("profile_img")(req, res, (err) => {
+      if (err) {
+          console.error("❌ Multer Error:", err);
+      }
+      next();
+  });
+}, register);
 
+
+
+// router.post("/register", upload.single("profile_img"), register);
 /**
  * @swagger
  * /auth/login:
