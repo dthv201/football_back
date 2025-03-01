@@ -8,11 +8,12 @@ const router = express.Router();
 // Multer setup
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, "uploads/"); // Save files in the "uploads/" directory
+        const uploadPath = process.env.NODE_ENV === "test" ? "uploads/test" : "uploads";
+        cb(null, uploadPath);
   },
   filename: function (req, file, cb) {
     const ext = file.originalname.split('.').pop();
-    cb(null, `${Date.now()}.${ext}`); // Unique filename using timestamp
+    cb(null, `${Date.now()}.${ext}`); 
   }
 });
 const upload = multer({ storage: storage });
@@ -64,7 +65,18 @@ const upload = multer({ storage: storage });
  *       400:
  *         description: Bad request (validation error)
  */
-router.post("/register", upload.single("profile_img"), register);
+router.post("/register", (req, res, next) => {
+  upload.single("profile_img")(req, res, (err) => {
+      if (err) {
+          console.error("❌ Multer Error:", err);
+      }
+      next();
+  });
+}, register);
+
+
+
+// router.post("/register", upload.single("profile_img"), register);
 /**
  * @swagger
  * /auth/login:
