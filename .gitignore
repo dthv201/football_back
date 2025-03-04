@@ -133,4 +133,4 @@ dist
 *.jpg
 *.jpeg
 *.env
-*.env.test
+*.env_test
