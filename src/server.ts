@@ -69,6 +69,7 @@ const initApp = async () => {
         app.use("/file", fileRouter);
         app.use("/public", express.static("public"));
         app.use("/storage", express.static("storage"));
+        app.use("/uploads", express.static("uploads"));
         app.use(express.static("front"));
 
         resolve(app);
