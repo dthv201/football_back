@@ -3,6 +3,8 @@ import multer from "multer";
 import authController from "../controllers/auth_controller";
 import { register } from "../controllers/auth_controller";
 
+
+
 const router = express.Router();
 
 // Multer setup
@@ -17,6 +19,9 @@ const storage = multer.diskStorage({
   }
 });
 const upload = multer({ storage: storage });
+
+
+
 
 /**
  * @swagger
@@ -73,6 +78,14 @@ router.post("/register", (req, res, next) => {
       next();
   });
 }, register);
+router.post("/google", async (req, res, next) => {
+  try {
+    await authController.googleSignin(req, res, next);
+  } catch (err) {
+    next(err);
+  }
+});
+
 
 
 
@@ -106,6 +119,7 @@ router.post("/register", (req, res, next) => {
  *         description: Server error
  */
 router.post("/login", authController.login);
+
 
 /**
  * @swagger
