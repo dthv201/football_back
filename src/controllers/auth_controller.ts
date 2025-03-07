@@ -77,78 +77,75 @@ const googleSignin = async (req: Request, res: Response, next: NextFunction)=> {
 //I want to login from the registrerion too
 export const register = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-        const { username, email, password, skillLevel } = req.body;
-
-        if (!username || !email || !password) {
-            res.status(400).json({ error: "Username, email, and password are required" });
-            return;
-        }
-
-
-        const existEmail = await userModel.findOne({ email });
-
-
-
-        if (existEmail) {
-            res.status(400).json({ error: 'Email already exists' });
-            return;
-        }
-
-        const existingUsername = await userModel.findOne({ username });
-
-        if (existingUsername) {
-            res.status(400).json({ error: 'Username already exists' });
-            return;
-        }
-
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(password, salt);
-
-        const profileImageUrl = req.file ?
-         `/uploads/${req.file.filename}` : 
-         "https://cdn-icons-png.flaticon.com/512/3135/3135715.png";
-
-        const skillLevel_filed = skillLevel? skillLevel: SkillLevel.BEGINNER;
-        const user = await userModel.create({
-            username,
-            skillLevel: skillLevel_filed,
-            email,
-            password: hashedPassword,
-            profile_img: profileImageUrl
-        });
-        const tokens = generateToken(user._id);
-        if (!tokens) {
-          res.status(500).json({ error: 'Token generation failed' });
-          return;
-        }
-    
-        // Initialize refreshToken array if not present and save the new token
-        if (!user.refreshToken) {
-          user.refreshToken = [];
-        }
-        user.refreshToken.push(tokens.refreshToken);
-        await user.save();
-    
-        // Return tokens and user details (auto login)
-        res.status(201).json({
-          message: 'User registered and logged in successfully',
-          accessToken: tokens.accessToken,
-          refreshToken: tokens.refreshToken,
-          user: {
-            _id: user._id.toString(),
-            username: user.username,
-            email: user.email,
-            skillLevel: user.skillLevel,
-            profile_img: user.profile_img,
-          },
-        });
-
-    } catch (err) {
+      const { username, email, password, skillLevel } = req.body;
       
-        res.status(400).json({ error: 'Registration failed', details: err });
-        next(err);
+      if (!username || !email || !password) {
+        res.status(400).json({ error: "Username, email, and password are required" });
+        return;
+      }
+  
+      const existEmail = await userModel.findOne({ email });
+      if (existEmail) {
+        res.status(400).json({ error: 'Email already exists' });
+        return;
+      }
+  
+      const existingUsername = await userModel.findOne({ username });
+      if (existingUsername) {
+        res.status(400).json({ error: 'Username already exists' });
+        return;
+      }
+  
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(password, salt);
+  
+      const profileImageUrl = req.file ?
+        `/uploads/${req.file.filename}` : 
+        "https://cdn-icons-png.flaticon.com/512/3135/3135715.png";
+  
+      const skillLevel_filed = skillLevel ? skillLevel : SkillLevel.BEGINNER;
+      
+      const user = await userModel.create({
+        username,
+        skillLevel: skillLevel_filed,
+        email,
+        password: hashedPassword,
+        profile_img: profileImageUrl
+      });
+  
+      const tokens = generateToken(user._id);
+      console.log("Generated tokens:", tokens);
+      if (!tokens) {
+        res.status(500).json({ error: 'Token generation failed' });
+        return;
+      }
+  
+      if (!user.refreshToken) {
+        user.refreshToken = [];
+      }
+      user.refreshToken.push(tokens.refreshToken);
+      await user.save();
+  
+      res.status(201).json({
+        message: 'User registered and logged in successfully',
+        accessToken: tokens.accessToken,
+        refreshToken: tokens.refreshToken,
+        user: {
+          _id: user._id.toString(),
+          username: user.username,
+          email: user.email,
+          skillLevel: user.skillLevel,
+          profile_img: user.profile_img,
+        },
+      });
+  
+    } catch (err: any) {
+      console.error("Registration error:", err);
+      res.status(400).json({ error: 'Registration failed', details: err.message || err });
+      next(err);
     }
-};
+  };
+  
 
 
 const login = async (req: Request, res: Response) => {
