@@ -10,7 +10,8 @@
     "testPost": "jest --detectOpenHandles --forceExit posts.test.ts",
     "testComment": "jest --detectOpenHandles --forceExit coments.test.ts",
     "testTeam": "jest --detectOpenHandles --forceExit teams.test.ts",
-    "testAuth": "jest --detectOpenHandles --forceExit auth.test.ts"
+    "testAuth": "cross-env NODE_ENV=test jest --detectOpenHandles --forceExit auth.test.ts",
+    "testFile": "jest --detectOpenHandles --forceExit file.test.ts"
   },
   "repository": {
     "type": "git",
@@ -27,21 +28,26 @@
     "@types/supertest": "^6.0.2",
     "bcrypt": "^5.1.1",
     "body-parser": "^1.20.3",
+    "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "jsonwebtoken": "^9.0.2",
-    "mongoose": "^8.9.5"
+    "mongoose": "^8.9.5",
+    "multer": "^1.4.5-lts.1"
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",
     "@types/body-parser": "^1.19.5",
+    "@types/cors": "^2.8.17",
     "@types/express": "^5.0.0",
     "@types/express-serve-static-core": "^5.0.2",
     "@types/jest": "^29.5.14",
     "@types/jsonwebtoken": "^9.0.7",
     "@types/mongoose": "^5.11.96",
+    "@types/multer": "^1.4.12",
     "@types/swagger-jsdoc": "^6.0.4",
     "@types/swagger-ui-express": "^4.1.7",
+    "cross-env": "^7.0.3",
     "jest": "^29.7.0",
     "nodemon": "^3.1.9",
     "supertest": "^7.0.0",

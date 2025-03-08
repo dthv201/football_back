@@ -1,27 +1,30 @@
-import express, { Express } from "express";
-const app = express();
+import express, { Express, NextFunction, Request, Response } from "express";
 import dotenv from "dotenv";
-dotenv.config();
 import mongoose from "mongoose";
 import postsRoutes from "./routes/posts_route";
 import commentsRoutes from "./routes/comments_route";
 import authRoutes from "./routes/auth_route";
-import bodyParser from "body-parser";
+import fileRouter from "./routes/file_route";
 import swaggerUI from "swagger-ui-express";
 import swaggerJsDoc from "swagger-jsdoc";
+import cors from "cors";
+
+dotenv.config();
+
+const app = express();
 
 if (process.env.NODE_ENV == "development") {
   const options = {
-      definition: {
-          openapi: "3.0.0",
-          info: {
-              title: "Web Dev 2022 REST API",
-              version: "1.0.0",
-              description: "REST server including authentication using JWT",
-          },
-          servers: [{url: "http://localhost:3000",},],
+    definition: {
+      openapi: "3.0.0",
+      info: {
+        title: "Web Dev 2022 REST API",
+        version: "1.0.0",
+        description: "REST server including authentication using JWT",
       },
-      apis: ["./src/routes/*.ts"],
+      servers: [{ url: "http://localhost:3000" }],
+    },
+    apis: ["./src/routes/*.ts"],
   };
   const specs = swaggerJsDoc(options);
   app.use("/api-docs", swaggerUI.serve, swaggerUI.setup(specs));
@@ -36,9 +39,6 @@ const initApp = async () => {
     db.on("error", (err) => {
       console.error(err);
     });
-    db.once("open", () => {
-      console.log("Connected to MongoDB");
-    });
 
     if (process.env.DB_CONNECTION === undefined) {
       console.error("MONGO_URI is not set");
@@ -47,19 +47,34 @@ const initApp = async () => {
       mongoose.connect(process.env.DB_CONNECTION).then(() => {
         console.log("initApp finish");
 
-        app.use(bodyParser.json());
-        app.use(bodyParser.urlencoded({ extended: true }));
+        app.use(cors());
+        app.use(express.json()); // Parses JSON requests
+        app.use(express.urlencoded({ extended: true })); // Parses form data
 
-        app.use("/auth", authRoutes);
-        app.use("/posts", postsRoutes);
-        app.use("/comments", commentsRoutes);
+        app.use((req, res, next) => {
+          res.setHeader("Access-Control-Allow-Origin", "*");
+          res.setHeader("Access-Control-Allow-Methods", "*");
+          res.setHeader("Access-Control-Allow-Headers", "*");
+          next();
+        });
+
+        const delay = (req: Request, res: Response, next: NextFunction) => {
+          const d = new Promise<void>((r) => setTimeout(() => r(), 2000));
+          d.then(() => next());
+        };
+
+        app.use("/posts", delay, postsRoutes);
+        app.use("/comments", delay, commentsRoutes);
+        app.use("/auth", delay, authRoutes);
+        app.use("/file", fileRouter);
+        app.use("/public", express.static("public"));
+        app.use("/storage", express.static("storage"));
+        app.use(express.static("front"));
 
         resolve(app);
       });
     }
   });
 };
-
-
 
 export default initApp;
