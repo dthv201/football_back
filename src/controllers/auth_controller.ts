@@ -4,107 +4,213 @@ import userModel, { IUser, SkillLevel } from '../models/users_model';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { Document } from 'mongoose';
+import { GoogleAuth } from 'google-auth-library';
+import {OAuth2Client} from 'google-auth-library';
+import { use } from 'passport';
 
 
 const upload = multer();
 
 
-export const register = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
+const googleSignin = async (req: Request, res: Response, next: NextFunction)=> {
     try {
-        // console.log("📥 Received Registration Request");
-        // console.log("🔹 Request Body:", req.body);
-        // console.log("🔹 Request File:", req.file);
+        console.log(req.body);
 
-        // console.log("Received Registration Request");
-        // console.log("Body:", req.body);
-        // console.log("File:", req.file);
-
-     
-        const { username, email, password, skillLevel } = req.body;
-
-        if (!username || !email || !password) {
-            res.status(400).json({ error: "Username, email, and password are required" });
-            return;
-        }
-
-
-        const existEmail = await userModel.findOne({ email });
-
-
-
-        if (existEmail) {
-            res.status(400).json({ error: 'Email already exists' });
-            return;
-        }
-
-        const existingUsername = await userModel.findOne({ username });
-
-        if (existingUsername) {
-            res.status(400).json({ error: 'Username already exists' });
-            return;
-        }
-
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(password, salt);
-
-        const profileImageUrl = req.file ?
-         `/uploads/${req.file.filename}` : 
-         "https://cdn-icons-png.flaticon.com/512/3135/3135715.png";
-
-        //  if (!req.file) {
-        //     console.log("⚠️ No image uploaded, using default profile image.");
-        // }
-
-        const skillLevel_filed = skillLevel? skillLevel: SkillLevel.BEGINNER;
-        const user = await userModel.create({
-            username,
-            skillLevel: skillLevel_filed,
-            email,
-            password: hashedPassword,
-            profile_img: profileImageUrl
+        const ticket = await client.verifyIdToken({
+            idToken: req.body.credential,
+            audience: process.env.GOOGLE_CLIENT_ID,  
         });
 
-       // console.log("✅ User registered successfully:", user);
-        res.status(201).json({ message: 'User registered successfully', user });
+        const payload = ticket.getPayload();
+        if (!payload || !payload.email) {
+            return res.status(400).json({ error: "Invalid Google token" });
+        }
 
-    } catch (err) {
-      
-        res.status(400).json({ error: 'Registration failed', details: err });
-        next(err);
+        const email = payload.email;
+        let user = await userModel.findOne({ email });
+
+        const dummyPassword = Math.random().toString(36).slice(-8);
+        if (!user) {
+            user = await userModel.create({
+                email,
+                password: dummyPassword, 
+                username: payload.name,
+                profile_img: payload.picture,
+                skillLevel: SkillLevel.BEGINNER,
+                refreshToken: [],
+            });
+        }
+
+        const tokens: tTokens | null = generateToken(user._id);
+        if (!tokens) {
+            return res.status(500).json({ error: "Token generation failed" });
+        }
+
+        if (!user.refreshToken) {
+            user.refreshToken = [];
+        }
+        if (tokens) {
+            user.refreshToken.push(tokens.refreshToken);
+        }
+        await user.save();
+
+        res.status(200).json({
+            accessToken: tokens.accessToken,
+            refreshToken: tokens.refreshToken,
+            user: {
+                _id: user._id.toString(),
+                username: user.username,
+                email: user.email,
+                profile_img: user.profile_img,
+            },
+        });
+
+    } catch (err: unknown) {
+        next(err)
     }
 };
 
 
+//I want to login from the registrerion too
+export const register = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { username, email, password, skillLevel } = req.body;
+      
+      if (!username || !email || !password) {
+        res.status(400).json({ error: "Username, email, and password are required" });
+        return;
+      }
+  
+      const existEmail = await userModel.findOne({ email });
+      if (existEmail) {
+        res.status(400).json({ error: 'Email already exists' });
+        return;
+      }
+  
+      const existingUsername = await userModel.findOne({ username });
+      if (existingUsername) {
+        res.status(400).json({ error: 'Username already exists' });
+        return;
+      }
+  
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(password, salt);
+  
+      const profileImageUrl = req.file ?
+        `/uploads/${req.file.filename}` : 
+        "https://cdn-icons-png.flaticon.com/512/3135/3135715.png";
+  
+      const skillLevel_filed = skillLevel ? skillLevel : SkillLevel.BEGINNER;
+      
+      const user = await userModel.create({
+        username,
+        skillLevel: skillLevel_filed,
+        email,
+        password: hashedPassword,
+        profile_img: profileImageUrl
+      });
+  
+      const tokens = generateToken(user._id);
+      console.log("Generated tokens:", tokens);
+      if (!tokens) {
+        res.status(500).json({ error: 'Token generation failed' });
+        return;
+      }
+  
+      if (!user.refreshToken) {
+        user.refreshToken = [];
+      }
+      user.refreshToken.push(tokens.refreshToken);
+      await user.save();
+  
+      res.status(201).json({
+        message: 'User registered and logged in successfully',
+        accessToken: tokens.accessToken,
+        refreshToken: tokens.refreshToken,
+        user: {
+          _id: user._id.toString(),
+          username: user.username,
+          email: user.email,
+          skillLevel: user.skillLevel,
+          profile_img: user.profile_img,
+        },
+      });
+  
+    } catch (err: any) {
+      console.error("Registration error:", err);
+      res.status(400).json({ error: 'Registration failed', details: err.message || err });
+      next(err);
+    }
+  };
+  
+  export const updateUserInfo = async (req: Request, res: Response) => {
+    try {
+      console.log("UPDATE CONTROLLER: Request received", req.params, req.body, req.file);
+      
+      const updateFields: any = {};
+      if (req.body.username) 
+        updateFields.username = req.body.username;
+
+      if (req.body.skillLevel) 
+        updateFields.skillLevel = req.body.skillLevel;
+
+      if (req.file) {
+        updateFields.profile_img = `/uploads/${req.file.filename}`;
+      }
+      
+      console.log("Updating with fields:", updateFields);
+      
+      const updatedUser = await userModel.findByIdAndUpdate(
+        req.params.id,
+        { $set: updateFields },
+        { new: true }
+      );
+      
+      if (!updatedUser) {
+        console.log("User not found");
+       res.status(404).json({ error: "User not found" });
+       return;
+      }
+      
+      console.log("User updated successfully", updatedUser);
+       res.status(200).json(updatedUser);
+       return;
+    } catch (error) {
+      console.error("Error updating user:", error);
+       res.status(500).json({ error: "Server Error" });
+       return;
+    }
+  };
+  
+
+
 const login = async (req: Request, res: Response) => {
     try {
-        // console.log("📥 Received Login Request");
-        // console.log("🔹 Request Body:", req.body);
+
 
         const { email, password } = req.body;
 
         if (!email || !password) {
-          //  console.log("❌ Missing email or password - Sending 400");
             res.status(400).json({ error: 'Email and password are required' });
             return;
         }
 
         const user = await userModel.findOne({ email });
-       // console.log("🔎 Found User in DB:", user);
 
         if (!user) {
-           // console.log("❌ User Not Found - Sending 400");
             res.status(400).json({ error: 'Invalid credentials' });
             return;
         }
 
-        // console.log("🔑 Checking Password Match:");
-        // console.log("🔹 Entered Password:", password);
-        // console.log("🔹 Hashed Password in DB:", user.password);
+
 
         const isPasswordValid = await bcrypt.compare(password, user.password);
-       // console.log("Password Match:", isPasswordValid);
+
         if (!isPasswordValid) {
-           // console.log("❌ Incorrect Password - Sending 400");
+
             res.status(400).json({ error: 'Invalid credentials' });
             return;
         }
@@ -125,7 +231,7 @@ const login = async (req: Request, res: Response) => {
             user.refreshToken.push(tokens.refreshToken);
            
             await user.save();
-          //  console.log("Generated Tokens:", tokens.accessToken, tokens.refreshToken);
+  
             res.status(200).json({
                 accessToken: tokens.accessToken,
                 refreshToken: tokens.refreshToken,
@@ -155,22 +261,15 @@ const logout = async (req: Request, res: Response) => {
     try {
         const { refreshToken } = req.body;
         if (!refreshToken) {
-          //  console.log("❌ Logout: No refresh token provided");
             res.status(400).json({ error: 'Refresh token is required' });
             return;
         }
 
-       // console.log("🔍 Logout: Verifying refresh token:", refreshToken);
         const user = await verifyRefreshToken(refreshToken);
-
-        // Remove the provided refresh token from the user's refreshToken array
-       // console.log("🔄 Logout: Removing refresh token from user record.");
-        user.refreshToken = (user.refreshToken || []).filter(token => token !== refreshToken);
-        
+        user.refreshToken = (user.refreshToken || []).filter(token => token !== refreshToken);     
         await user.save();
-      //  console.log("✅ Logout: Refresh token removed and user saved successfully.");
-
         res.status(200).json({ message: 'Logged out successfully' });
+
     } catch (err) {
       //  console.log("❌ Logout failed:", err);
         if (err instanceof Error) {
@@ -186,28 +285,24 @@ const refresh = async (req: Request, res: Response) => {
     try {
       const { refreshToken } = req.body;
       if (!refreshToken) {
-       // console.log("❌ No refresh token provided in request body");
         res.status(400).json({ error: 'Refresh token is required' });
-        //console.log("ℹ️ Response sent for missing refresh token");
         return;
       }
   
-      //console.log("🔍 Starting refresh process for token:", refreshToken);
   
       let payload;
       try {
         payload = jwt.verify(refreshToken, process.env.TOKEN_SECRET as string) as any;
-      //  console.log("✅ Token verified. Payload:", payload);
+
       } catch (err) {
-       // console.log("❌ Token verification failed:", err);
+
         res.status(403).json({ error: 'Invalid refresh token' });
-       // console.log("ℹ️ Response sent for invalid refresh token (verification failed)");
+
         return;
       }
   
       const userId = payload._id;
   
-      // Atomically remove the used refresh token
       const user = await userModel.findOneAndUpdate(
         { _id: userId, refreshToken: refreshToken },
         { $pull: { refreshToken: refreshToken } },
@@ -215,43 +310,30 @@ const refresh = async (req: Request, res: Response) => {
       );
   
       if (!user) {
-        //console.log("❌ No user found with the provided refresh token, or token already used.");
         res.status(403).json({ error: 'Invalid refresh token' });
-       // console.log("ℹ️ Response sent for invalid refresh token (user not found)");
         return;
       }
   
-     // console.log("🔄 Refresh token removed from user's token list successfully.");
-  
-      // Generate new tokens
       const tokens = generateToken(user._id);
       if (!tokens) {
-    //    console.log("❌ Failed to generate new tokens.");
         res.status(500).json({ error: 'Token generation failed' });
-      //  console.log("ℹ️ Response sent for token generation failure");
         return;
       }
-  //    console.log("🔑 New tokens generated:", tokens);
-  
-      // Add the new refresh token to the user's token array
+
       if (!user.refreshToken) {
         user.refreshToken = [];
       }
       user.refreshToken.push(tokens.refreshToken);
   
       await user.save();
-      //console.log("✅ New refresh token added to user record.");
   
       res.status(200).json({
         accessToken: tokens.accessToken,
         refreshToken: tokens.refreshToken,
         _id: user._id
       });
-     // console.log("ℹ️ Response sent for successful token refresh.");
     } catch (err) {
-     // console.log("❌ Error in refresh token process:", err);
       res.status(500).json({ error: 'Refresh failed', details: err instanceof Error ? err.message : "Unknown error" });
-     // console.log("ℹ️ Response sent for refresh process error.");
     }
   };
   
@@ -301,56 +383,46 @@ type tUser = Document<unknown, {}, IUser> & IUser & Required<{
 }
 const verifyRefreshToken = (refreshToken: string | undefined) => {
     return new Promise<tUser>(async (resolve, reject) => {
-     //   console.log("🔍 Verifying Refresh Token:", refreshToken);
 
         if (!refreshToken) {
-            console.log("❌ No refresh token provided");
             reject("Refresh token missing");
             return;
         }
 
         if (!process.env.TOKEN_SECRET) {
-         //   console.log("❌ TOKEN_SECRET is not defined");
             reject("Server configuration error: TOKEN_SECRET missing");
             return;
         }
 
         try {
-            // Verify token
+
             const payload = jwt.verify(refreshToken, process.env.TOKEN_SECRET as string) as any;
             const userId = payload._id;
-         //   console.log("✅ Refresh Token belongs to user:", userId);
 
             const user = await userModel.findById(userId);
             if (!user) {
-            //    console.log("❌ No user found for this token");
                 reject("Invalid token: user not found");
                 return;
             }
 
-            // Remove expired tokens
             user.refreshToken = (user.refreshToken || []).filter((token) => {
                 try {
                     jwt.verify(token, process.env.TOKEN_SECRET as string);
-                    return true; // Keep valid tokens
+                    return true; 
                 } catch (error) {
-                    return false; // Remove invalid/expired tokens
+                    return false;
                 }
             });
 
-            // Ensure the provided token exists in the valid list
             if (!user.refreshToken.includes(refreshToken)) {
                 await user.save();
-          //      console.log("❌ Provided token is not in the user's valid token list");
                 reject("Invalid refresh token");
                 return;
             }
 
-         //   console.log("✅ Refresh token is valid for:", user.email);
-            await user.save(); // Save updated token list
+            await user.save(); 
             resolve(user);
         } catch (err) {
-         //   console.log("❌ Error verifying refresh token:", err);
             reject("Invalid refresh token");
         }
     });
@@ -368,7 +440,6 @@ type Payload = {
 export const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
     const authorization = req.header('authorization');
     const token = authorization && authorization.split(' ')[1];
-   // console.log("🔑 Token Received:", token);
 
     if (!token) {
         res.status(401).send('Access Denied');
@@ -381,19 +452,19 @@ export const authMiddleware = (req: Request, res: Response, next: NextFunction) 
 
     jwt.verify(token, process.env.TOKEN_SECRET, (err, payload) => {
         if (err) {
-        //    console.log("❌ Authorization Failed:", err)
             res.status(401).send('Access Denied');
             return;
         }
         
         req.params.userId = (payload as Payload)._id;
-    //    console.log("✅ Decoded Token:", req.params.userId);
         next();
     });
 };
 
 export default {
+    googleSignin,
     login,
     refresh,
-    logout
+    logout,
+    
 };

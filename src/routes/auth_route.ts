@@ -1,7 +1,9 @@
 import express from "express";
 import multer from "multer";
 import authController from "../controllers/auth_controller";
-import { register } from "../controllers/auth_controller";
+import { register,updateUserInfo, authMiddleware } from "../controllers/auth_controller";
+
+
 
 const router = express.Router();
 
@@ -17,6 +19,9 @@ const storage = multer.diskStorage({
   }
 });
 const upload = multer({ storage: storage });
+
+
+
 
 /**
  * @swagger
@@ -73,6 +78,14 @@ router.post("/register", (req, res, next) => {
       next();
   });
 }, register);
+router.post("/google", async (req, res, next) => {
+  try {
+    await authController.googleSignin(req, res, next);
+  } catch (err) {
+    next(err);
+  }
+});
+
 
 
 
@@ -106,6 +119,52 @@ router.post("/register", (req, res, next) => {
  *         description: Server error
  */
 router.post("/login", authController.login);
+
+
+/**
+ * @swagger
+ * /users/{id}:
+ *   put:
+ *     summary: Update a user's profile.
+ *     description: Update the username and profile image of a user.
+ *     tags:
+ *       - Users
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The unique ID of the user to update.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               username:
+ *                 type: string
+ *                 description: The new username.
+ *                 example: newUsername
+ *               profile_img:
+ *                 type: string
+ *                 description: The new profile image path.
+ *                 example: /uploads/newProfileImg.jpg
+ *     responses:
+ *       200:
+ *         description: User updated successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
+ *       404:
+ *         description: User not found.
+ *       500:
+ *         description: Server error.
+ */
+// router.put("/users/:id", authMiddleware, upload.single("profile_img"), updateUserInfo);
+router.put("/users/:id", authMiddleware, upload.single("profile_img"), updateUserInfo);
 
 /**
  * @swagger
