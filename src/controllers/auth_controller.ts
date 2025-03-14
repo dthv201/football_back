@@ -146,6 +146,45 @@ export const register = async (req: Request, res: Response, next: NextFunction):
     }
   };
   
+  export const updateUserInfo = async (req: Request, res: Response) => {
+    try {
+      console.log("UPDATE CONTROLLER: Request received", req.params, req.body, req.file);
+      
+      const updateFields: any = {};
+      if (req.body.username) 
+        updateFields.username = req.body.username;
+
+      if (req.body.skillLevel) 
+        updateFields.skillLevel = req.body.skillLevel;
+
+      if (req.file) {
+        updateFields.profile_img = `/uploads/${req.file.filename}`;
+      }
+      
+      console.log("Updating with fields:", updateFields);
+      
+      const updatedUser = await userModel.findByIdAndUpdate(
+        req.params.id,
+        { $set: updateFields },
+        { new: true }
+      );
+      
+      if (!updatedUser) {
+        console.log("User not found");
+       res.status(404).json({ error: "User not found" });
+       return;
+      }
+      
+      console.log("User updated successfully", updatedUser);
+       res.status(200).json(updatedUser);
+       return;
+    } catch (error) {
+      console.error("Error updating user:", error);
+       res.status(500).json({ error: "Server Error" });
+       return;
+    }
+  };
+  
 
 
 const login = async (req: Request, res: Response) => {

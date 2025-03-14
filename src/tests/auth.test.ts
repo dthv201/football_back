@@ -117,7 +117,7 @@ describe("Auth Tests ", () => {
     expect(response.body).toHaveProperty("error");
   });
 
-  test("↗️Register user with same email", async () => {
+  test("Register user with same email", async () => {
     const response = await request(app).post(baseUrl + "/register").send({
       username: "testuser2",
       email: "testuser_img@example.com",
@@ -524,7 +524,79 @@ describe("Auth Tests ", () => {
       });
     });
   });
-
-
-
 });
+
+// updateUserInfo.test.ts
+
+describe('PUT /auth/users/:id - Partial Update User Info', () => {
+  let userId: string;
+  let accessToken: string;
+  let initialProfileImg: string;
+
+  beforeAll(async () => {
+    // Clean up any existing users for test isolation
+    await userModel.deleteMany();
+
+    // Register a test user
+    const uniqueEmail = `test_${Date.now()}@example.com`;
+    const registerResponse = await request(app)
+      .post('/auth/register')
+      .field('username', 'testuser')
+      .field('email', uniqueEmail)
+      .field('password', 'password123')
+      .field('skillLevel', 'Beginner');
+      
+    // Expect registration success
+    expect(registerResponse.status).toBe(201);
+    const registerBody = registerResponse.body;
+    
+    // Save user id and token from the registration response
+    userId = registerBody.user._id;
+    accessToken = registerBody.accessToken;
+    initialProfileImg = registerBody.user.profile_img; // Likely a default image
+  });
+
+  afterAll(async () => {
+    // Cleanup test users and close DB connection
+    await userModel.deleteMany({});
+    await mongoose.connection.close();
+  });
+
+  it('should update username and skillLevel without changing profile_img when no file is provided', async () => {
+    const res = await request(app)
+      .put(`/auth/users/${userId}`)
+      .set('Authorization', `Bearer ${accessToken}`)
+      .field('username', 'updateduserwithoutfile')
+      .field('skillLevel', 'Advanced');
+      
+    expect(res.status).toBe(200);
+    expect(res.body._id).toBe(userId);
+    expect(res.body.username).toBe('updateduserwithoutfile');
+    expect(res.body.skillLevel).toBe('Advanced');
+    // The profile_img should remain unchanged if no new file was sent
+    expect(res.body.profile_img).toBe(initialProfileImg);
+  });
+
+  it('should update profile_img if a file is provided', async () => {
+    const res = await request(app)
+      .put(`/auth/users/${userId}`)
+      .set('Authorization', `Bearer ${accessToken}`)
+      // We are not sending new text fields so they should remain unchanged
+      .attach('profile_img', path.join(__dirname, 'sample-avatar.png')); // Ensure this file exists
+
+    expect(res.status).toBe(200);
+    expect(res.body._id).toBe(userId);
+    // Text fields should remain as they were in the previous update
+    expect(res.body.username).toBe('updateduserwithoutfile');
+    expect(res.body.skillLevel).toBe('Advanced');
+    // The profile_img should now reflect the uploaded file (typically containing 'uploads' in its path)
+    expect(res.body.profile_img).toMatch(/uploads/);
+  });
+});
+
+  
+
+
+
+
+
