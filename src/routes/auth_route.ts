@@ -89,6 +89,9 @@ router.post("/google", async (req, res, next) => {
 
 
 
+
+
+
 // router.post("/register", upload.single("profile_img"), register);
 /**
  * @swagger
@@ -163,8 +166,56 @@ router.post("/login", authController.login);
  *       500:
  *         description: Server error.
  */
-// router.put("/users/:id", authMiddleware, upload.single("profile_img"), updateUserInfo);
 router.put("/users/:id", authMiddleware, upload.single("profile_img"), updateUserInfo);
+
+
+/**
+ * @swagger
+ * /auth/user:
+ *   get:
+ *     summary: Retrieve the currently authenticated user.
+ *     description: >
+ *       Returns the details of the user based on the provided JWT access token.
+ *       The token must be included in the Authorization header as a Bearer token.
+ *     tags:
+ *       - Authentication
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved user data.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 _id:
+ *                   type: string
+ *                   description: The user ID.
+ *                 username:
+ *                   type: string
+ *                   description: The username.
+ *                 email:
+ *                   type: string
+ *                   description: The user's email.
+ *                 skillLevel:
+ *                   type: string
+ *                   description: The user's skill level.
+ *                 profile_img:
+ *                   type: string
+ *                   description: URL to the user's profile image.
+ *             example:
+ *               _id: "615f1b2e12f1b1a1a1a1a1a1"
+ *               username: "JohnDoe"
+ *               email: "john.doe@example.com"
+ *               skillLevel: "Beginner"
+ *               profile_img: "/uploads/profile.jpg"
+ *       401:
+ *         description: Unauthorized. Access token is missing or invalid.
+ *       500:
+ *         description: Internal server error.
+ */
+router.get("/user", authMiddleware, authController.fetchUser);
 
 /**
  * @swagger

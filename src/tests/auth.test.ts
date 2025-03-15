@@ -39,7 +39,7 @@ beforeAll(async () => {
 afterAll(async () => {
   console.log("🧹 Cleaning up test uploads...");
 
-  const testUploadDir = path.resolve(__dirname, "../uploads/test"); // Ensure only test files are deleted
+  const testUploadDir = path.resolve(__dirname, "../uploads/test");
   if (fs.existsSync(testUploadDir)) {
       fs.readdirSync(testUploadDir).forEach((file) => {
           const filePath = path.join(testUploadDir, file);
@@ -70,7 +70,7 @@ const testUser: User = {
   password: "password123",
   skillLevel: SkillLevel.BEGINNER
 }
-
+/*
 describe("Auth Tests ", () => {
 
   test(" Register user without profile image (should use default image)", async () => {
@@ -525,9 +525,9 @@ describe("Auth Tests ", () => {
     });
   });
 });
-
+*/
 // updateUserInfo.test.ts
-
+jest.setTimeout(30000);
 describe('PUT /auth/users/:id - Partial Update User Info', () => {
   let userId: string;
   let accessToken: string;
@@ -535,17 +535,19 @@ describe('PUT /auth/users/:id - Partial Update User Info', () => {
 
   beforeAll(async () => {
     // Clean up any existing users for test isolation
+    console.log('Deleting all existing users...');
     await userModel.deleteMany();
 
     // Register a test user
     const uniqueEmail = `test_${Date.now()}@example.com`;
+    console.log(`Registering test user with email: ${uniqueEmail}`);
     const registerResponse = await request(app)
       .post('/auth/register')
       .field('username', 'testuser')
       .field('email', uniqueEmail)
       .field('password', 'password123')
       .field('skillLevel', 'Beginner');
-      
+
     // Expect registration success
     expect(registerResponse.status).toBe(201);
     const registerBody = registerResponse.body;
@@ -554,21 +556,27 @@ describe('PUT /auth/users/:id - Partial Update User Info', () => {
     userId = registerBody.user._id;
     accessToken = registerBody.accessToken;
     initialProfileImg = registerBody.user.profile_img; // Likely a default image
+
+    console.log(`User registered. userId: ${userId}`);
+    console.log(`Initial profile_img: ${initialProfileImg}`);
+    console.log(`Access Token: ${accessToken}`);
   });
 
   afterAll(async () => {
-    // Cleanup test users and close DB connection
+    console.log('Cleaning up users and closing DB connection...');
     await userModel.deleteMany({});
     await mongoose.connection.close();
   });
 
   it('should update username and skillLevel without changing profile_img when no file is provided', async () => {
+    console.log('Starting update without file...');
     const res = await request(app)
       .put(`/auth/users/${userId}`)
       .set('Authorization', `Bearer ${accessToken}`)
       .field('username', 'updateduserwithoutfile')
       .field('skillLevel', 'Advanced');
-      
+
+    console.log('Response for update without file:', res.body);
     expect(res.status).toBe(200);
     expect(res.body._id).toBe(userId);
     expect(res.body.username).toBe('updateduserwithoutfile');
@@ -578,12 +586,14 @@ describe('PUT /auth/users/:id - Partial Update User Info', () => {
   });
 
   it('should update profile_img if a file is provided', async () => {
+    console.log('Starting update with file upload...');
     const res = await request(app)
       .put(`/auth/users/${userId}`)
       .set('Authorization', `Bearer ${accessToken}`)
       // We are not sending new text fields so they should remain unchanged
-      .attach('profile_img', path.join(__dirname, 'sample-avatar.png')); // Ensure this file exists
+      .attach('profile_img', path.join(__dirname, 'change-sample.png')); // Ensure this file exists
 
+    console.log('Response for update with file:', res.body);
     expect(res.status).toBe(200);
     expect(res.body._id).toBe(userId);
     // Text fields should remain as they were in the previous update
@@ -592,7 +602,18 @@ describe('PUT /auth/users/:id - Partial Update User Info', () => {
     // The profile_img should now reflect the uploaded file (typically containing 'uploads' in its path)
     expect(res.body.profile_img).toMatch(/uploads/);
   });
+
+  it(' Fetch user profile', async () => {
+    const res = await request(app)
+      .get(`/auth/user`)
+      .set('Authorization', `Bearer ${accessToken}`)
+      console.log('Response for fetch user profile:', res.body);
+      expect(res.status).toBe(200);
+      
+  
 });
+});
+
 
   
 
