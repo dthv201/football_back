@@ -89,6 +89,9 @@ router.post("/google", async (req, res, next) => {
 
 
 
+
+
+
 // router.post("/register", upload.single("profile_img"), register);
 /**
  * @swagger
@@ -165,6 +168,9 @@ router.post("/login", authController.login);
  */
 // router.put("/users/:id", authMiddleware, upload.single("profile_img"), updateUserInfo);
 router.put("/users/:id", authMiddleware, upload.single("profile_img"), updateUserInfo);
+
+
+router.get("/user", authMiddleware, authController.fetchUser);
 
 /**
  * @swagger

@@ -9,10 +9,30 @@ import {OAuth2Client} from 'google-auth-library';
 import { use } from 'passport';
 
 
+const fetchUser = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const userId = req.params.userId;
+
+      if(!userId) {
+        res.status(401).json({ error: 'Unauthorized: No user found in request' });
+        return;
+      }
+      const user = await userModel.findById(userId).select("-password"); ;
+      if (!user) {  
+        res.status(404).json({ error: 'User not found' });
+        return;
+      }
+      res.status(200).json(user);
+      return;
+
+    } catch (err) {
+      next(err)
+    }
+};
+
+
+
 const upload = multer();
-
-
-
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 const googleSignin = async (req: Request, res: Response, next: NextFunction)=> {
@@ -72,6 +92,8 @@ const googleSignin = async (req: Request, res: Response, next: NextFunction)=> {
         next(err)
     }
 };
+
+
 
 
 //I want to login from the registrerion too
@@ -466,5 +488,6 @@ export default {
     login,
     refresh,
     logout,
+    fetchUser,
     
 };
