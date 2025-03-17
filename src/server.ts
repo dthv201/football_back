@@ -65,10 +65,11 @@ const initApp = async () => {
 
         app.use("/posts", delay, postsRoutes);
         app.use("/comments", delay, commentsRoutes);
-        app.use("/auth", delay, authRoutes);
+        app.use("/auth",delay, authRoutes);
         app.use("/file", fileRouter);
         app.use("/public", express.static("public"));
         app.use("/storage", express.static("storage"));
+        app.use("/uploads", express.static("uploads"));
         app.use(express.static("front"));
 
         resolve(app);

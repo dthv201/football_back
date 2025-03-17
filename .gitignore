@@ -128,7 +128,16 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+<<<<<<< HEAD
 *.jpg
 *.env
 *.png
 .env_test
+=======
+
+*.png
+*.jpg
+*.jpeg
+*.env
+*.env_test
+>>>>>>> 0fc04a0db3f3eff8d7dd9c8822ba1846f85a4c64
