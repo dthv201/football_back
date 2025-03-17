@@ -130,3 +130,5 @@ dist
 .pnp.*
 *.jpg
 *.env
+*.png
+.env_test
