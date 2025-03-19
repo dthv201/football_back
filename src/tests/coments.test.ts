@@ -2,6 +2,7 @@ import request from "supertest";
 import initApp from "../server";
 import mongoose from "mongoose";
 import commentsModel from "../models/comments_model";
+import { CommentsController } from '../controllers/comments_controller';
 import { Express } from "express";
 import jwt from "jsonwebtoken";
 
@@ -15,6 +16,10 @@ const testComment = {
   owner: "Test Owner",
 };
 
+const invalid2 = {
+  comment: "This is a test comment",
+  owner: "Test Owner",
+}
 const invalidComment = {
   comment: "This is a test comment",
   postId: "676aed82c92c60d154870c7d",
@@ -139,6 +144,23 @@ describe("Comments test suite", () => {
       expect(response.body).toHaveProperty("message", "not found");
     });
   
-  
+    test("Get all the comment by the userId", async () => {
+      const response = await request(app)
+        .get(`/comments/posts/${testComment.postId}`)
+        .set("Authorization", `Bearer ${accessToken}`)
+      expect(response.statusCode).toBe(200);
+    });
+
+
+    
+    
+    
+
+
+
+    
+
+    
 
 });
+

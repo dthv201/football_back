@@ -155,5 +155,35 @@ router.put("/:id", authMiddleware, commentsController.update.bind(commentsContro
  *         description: Failed to delete item due to server error
  */
 router.delete("/:id", authMiddleware, commentsController.deleteItem.bind(commentsController));
+/**
+ * @swagger
+ * /posts/{postId}/comments:
+ *   get:
+ *     summary: Retrieve comments for a specific post.
+ *     description: Retrieves all comments associated with the given post ID.
+ *     parameters:
+ *       - in: path
+ *         name: postId
+ *         required: true
+ *         description: The ID of the post whose comments you want to retrieve.
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved comments.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Comment'
+ *       400:
+ *         description: Post ID is required.
+ *       500:
+ *         description: Internal Server Error.
+ */
+router.get("/posts/:postId",authMiddleware,  (req: express.Request, res: express.Response) => {
+  commentsController.getCommentsByPostId(req, res);
+});
 
 export default router;
