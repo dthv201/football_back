@@ -15,7 +15,6 @@ async getCommentsByPostId(req: Request, res: Response){
                 res.send(item);
             } else {
                 const items = await this.model.find();
-                console.log(items);
                 res.status(200).send(items);
             }
         } catch (error) {
