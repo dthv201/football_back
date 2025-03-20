@@ -7,16 +7,20 @@ export class CommentsController extends BaseController<IComment> {
   constructor() {
     super(commentsModel);
 }
-async getCommentsByPostId(req: Request, res: Response): Promise<Response> {
-  try {
-    const { postId } = req.params;
-    const comments = await commentsModel.find({ postId });
-    console.log("Fetched comments:", comments); 
-    return res.status(200).json(comments); 
-  } catch (error) {
-    console.error("Error fetching comments:", error);
-    return res.status(500).json({ error: "Internal Server Error" });
-  }
+async getCommentsByPostId(req: Request, res: Response){
+  const filter = req.query.postId;
+        try {
+            if (filter) {
+                const item = await this.model.find({ owner: filter });
+                res.send(item);
+            } else {
+                const items = await this.model.find();
+                console.log(items);
+                res.status(200).send(items);
+            }
+        } catch (error) {
+            res.status(400).send(error);
+        }
 }
 
 }
