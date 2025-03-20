@@ -48,8 +48,8 @@ const initApp = async () => {
         console.log("initApp finish");
 
         app.use(cors());
-        app.use(express.json()); // Parses JSON requests
-        app.use(express.urlencoded({ extended: true })); // Parses form data
+        app.use(express.json()); 
+        app.use(express.urlencoded({ extended: true })); 
 
         app.use((req, res, next) => {
           res.setHeader("Access-Control-Allow-Origin", "*");

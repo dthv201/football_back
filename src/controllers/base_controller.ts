@@ -38,9 +38,10 @@ class BaseController<T> {
     };
 
     async create(req: Request, res: Response) {
+      console.log("req.body in create comment:", req.body);
         const body = req.body;
         try {
-            const item = await this.model.create(body);
+            const item = await this.model.create(body);   
             res.status(201).send(item);
         } catch (error) {
             res.status(400).send(error);

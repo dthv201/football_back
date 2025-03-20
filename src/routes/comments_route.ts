@@ -182,7 +182,7 @@ router.delete("/:id", authMiddleware, commentsController.deleteItem.bind(comment
  *       500:
  *         description: Internal Server Error.
  */
-router.get("/posts/:postId",authMiddleware,  (req: express.Request, res: express.Response) => {
+router.get("/posts/:postId",authMiddleware, (req: express.Request, res: express.Response) => {
   commentsController.getCommentsByPostId(req, res);
 });
 

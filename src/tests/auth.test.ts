@@ -70,7 +70,7 @@ const testUser: User = {
   password: "password123",
   skillLevel: SkillLevel.BEGINNER
 }
-/*
+
 describe("Auth Tests ", () => {
 
   test(" Register user without profile image (should use default image)", async () => {
@@ -525,7 +525,7 @@ describe("Auth Tests ", () => {
     });
   });
 });
-*/
+
 // updateUserInfo.test.ts
 jest.setTimeout(30000);
 describe('PUT /auth/users/:id - Partial Update User Info', () => {
@@ -534,11 +534,9 @@ describe('PUT /auth/users/:id - Partial Update User Info', () => {
   let initialProfileImg: string;
 
   beforeAll(async () => {
-    // Clean up any existing users for test isolation
     console.log('Deleting all existing users...');
     await userModel.deleteMany();
 
-    // Register a test user
     const uniqueEmail = `test_${Date.now()}@example.com`;
     console.log(`Registering test user with email: ${uniqueEmail}`);
     const registerResponse = await request(app)
@@ -555,7 +553,7 @@ describe('PUT /auth/users/:id - Partial Update User Info', () => {
     // Save user id and token from the registration response
     userId = registerBody.user._id;
     accessToken = registerBody.accessToken;
-    initialProfileImg = registerBody.user.profile_img; // Likely a default image
+    initialProfileImg = registerBody.user.profile_img; 
 
     console.log(`User registered. userId: ${userId}`);
     console.log(`Initial profile_img: ${initialProfileImg}`);
