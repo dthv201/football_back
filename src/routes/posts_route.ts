@@ -2,6 +2,19 @@ import express from "express";
 const router = express.Router();
 import postsController from "../controllers/posts_controller";
 import auth_controller, { authMiddleware } from "../controllers/auth_controller";
+import multer from "multer";
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+        const uploadPath = process.env.NODE_ENV === "test" ? "uploads/test" : "uploads";
+        cb(null, uploadPath);
+  },
+  filename: function (req, file, cb) {
+    const ext = file.originalname.split('.').pop();
+    cb(null, `${Date.now()}.${ext}`); 
+  }
+});
+const upload = multer({ storage: storage });
 
 /**
  * @swagger
@@ -66,7 +79,7 @@ router.get("/", authMiddleware, postsController.getAll.bind(postsController));
  *       400:
  *         description: Bad request
  */
-router.get("/:id", authMiddleware, postsController.getById.bind(postsController));
+router.get("/:id", authMiddleware,upload.single("img"), postsController.getById.bind(postsController));
 
 /**
  * @swagger
@@ -92,7 +105,14 @@ router.get("/:id", authMiddleware, postsController.getById.bind(postsController)
  *       400:
  *         description: Bad request
  */
-router.post("/", authMiddleware, postsController.create.bind(postsController));
+router.post("/", authMiddleware, (req, res, next) => {
+    upload.single("img")(req, res, (err) => {
+        if (err) {
+            console.error("❌ Multer Error:", err);
+        }
+        next();
+    });
+  }, postsController.create.bind(postsController));
 
 /**
  * @swagger
@@ -127,7 +147,13 @@ router.post("/", authMiddleware, postsController.create.bind(postsController));
  *       400:
  *         description: Bad request
  */
-router.put("/:id", authMiddleware, postsController.update.bind(postsController));
+router.put("/:id", authMiddleware, (req, res, next) => {
+  upload.single("img")(req, res, (err) => {
+      if (err) {
+          console.error("❌ Multer Error:", err);
+      }
+      next();
+  })}, postsController.update.bind(postsController));
 
 /**
  * @swagger

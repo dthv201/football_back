@@ -4,9 +4,9 @@ import multer from "multer";
 
 const base = process.env.DOMAIN_BASE + "/";
 
-const storage = multer.diskStorage({
+export const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        cb(null, 'storage/')
+        cb(null, 'uploads/')
     },
     filename: function (req, file, cb) {
         const ext = file.originalname.split('.')
@@ -19,7 +19,9 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 router.post('/', upload.single("file"), function (req, res) {
-    console.log("router.post(/file: " + base + req.file?.path)
-    res.status(200).send({ url: base + req.file?.path })
+    // Replace backslashes with forward slashes for proper URL format.
+    const filePath = req.file?.path.replace(/\\/g, "/");
+    console.log("router.post(/file: " + process.env.DOMAIN_BASE + "/" + filePath);
+    res.status(200).send({ url: process.env.DOMAIN_BASE + "/" + filePath });
 });
 export default router;

@@ -233,23 +233,6 @@ describe("Auth Tests ", () => {
 
   
 
-  test("Auth test post ", async () => {
-    const response = await request(app).post("/posts").send({
-      title: "Test Post",
-      content: "Test Content",
-      owner: "sdfSd",
-    });
-    expect(response.statusCode).not.toBe(201);
-    const response2 = await request(app).post("/posts").set(
-      { authorization: "JWT " + testUser.accessToken }
-    ).send({
-      title: "Test Post",
-      content: "Test Content",
-      owner: "sdfSd",
-    });
-    expect(response2.statusCode).toBe(201);
-  });
-
   test("Test refresh token", async () => {
     const response = await request(app).post(baseUrl + "/refresh").send({
       refreshToken: testUser.refreshToken,

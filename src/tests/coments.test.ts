@@ -116,7 +116,7 @@ describe("Comments test suite", () => {
       expect(response.body.owner).toBe(updatedComment.owner);
     });
 
-    test("Get all the comment by the userId", async () => {
+    test("Get all the comment by the postId", async () => {
       const response = await request(app)
         .get(`/comments/posts/${testComment.postId}`)
         .set("Authorization", `Bearer ${accessToken}`)

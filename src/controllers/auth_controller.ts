@@ -22,6 +22,7 @@ const fetchUser = async (req: Request, res: Response, next: NextFunction): Promi
         res.status(404).json({ error: 'User not found' });
         return;
       }
+      console.log("User found:", user);
       res.status(200).json(user);
       return;
 
@@ -268,11 +269,7 @@ const login = async (req: Request, res: Response) => {
         }
 
     } catch (err) {
-        if (err instanceof Error) {
-            res.status(500).json({ error: 'Login failed', details: err.message });
-        } else {
             res.status(500).json({ error: 'Login failed', details: 'Unknown error occurred' });
-        }
     }
 };
 
