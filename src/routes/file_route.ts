@@ -1,27 +1,37 @@
+// FILE: routes/file_route.ts
 import express from "express";
-const router = express.Router();
 import multer from "multer";
+import path from "path";
 
-const base = process.env.DOMAIN_BASE + "/";
+const router = express.Router();
 
-export const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        cb(null, 'uploads/')
-    },
-    filename: function (req, file, cb) {
-        const ext = file.originalname.split('.')
-            .filter(Boolean) 
-            .slice(1)
-            .join('.')
-        cb(null, Date.now() + "." + ext)
-    }
-})
-const upload = multer({ storage: storage });
-
-router.post('/', upload.single("file"), function (req, res) {
-    // Replace backslashes with forward slashes for proper URL format.
-    const filePath = req.file?.path.replace(/\\/g, "/");
-    console.log("router.post(/file: " + process.env.DOMAIN_BASE + "/" + filePath);
-    res.status(200).send({ url: process.env.DOMAIN_BASE + "/" + filePath });
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "uploads"); // or "uploads/"
+  },
+  filename: (req, file, cb) => {
+    // preserve extension
+    const ext = path.extname(file.originalname);
+    // unique name: timestamp + extension
+    cb(null, Date.now() + ext);
+  },
 });
+
+const upload = multer({ storage });
+
+router.post("/", upload.single("file"), (req, res) => {
+  if (!req.file) {
+    res.status(400).json({ error: "No file uploaded" });
+    return;
+  }
+  // On Windows, replace backslashes with forward slashes
+  const filePath = req.file.path.replace(/\\/g, "/");
+
+  const baseUrl = process.env.DOMAIN_BASE || "http://localhost:3000";
+  const fullUrl = `${baseUrl}/${filePath}`;
+
+  console.log("File uploaded:", fullUrl);
+  res.json({ url: fullUrl });
+});
+
 export default router;

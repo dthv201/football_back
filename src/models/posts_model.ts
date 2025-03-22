@@ -1,3 +1,4 @@
+// FILE: models/posts_model.ts
 import mongoose, { Schema, Document } from "mongoose";
 
 export interface iPost extends Document {
@@ -6,54 +7,26 @@ export interface iPost extends Document {
   content: string;
   date: Date;
   location: string;
-  participantsIds?: string[]; 
   img?: string;
+  participantsIds?: string[];
   likes_number?: number;
   comments_number?: number;
 }
 
 const postSchema = new Schema<iPost>({
-  title: {
-    type: String,
-    required: true,
-  },
-  img: {
-    type: String,
-    default: "", 
-  },
+  title: { type: String, required: true },
   owner: {
     type: String,
     ref: "users",
     required: true,
   },
-  participantsIds: [
-    {
-      type: String,
-      ref: "users",
-    },
-  ],
-  content: {
-    type: String,
-    required: true,
-  },
-  date: {
-    type: Date,
-    required: true,
-  },
-  location: {
-    type: String,
-    required: true,
-  },
-  likes_number: {
-    type: Number,
-    default: 0,
-  },
-  comments_number: {
-    type: Number,
-    default: 0,
-  },
+  content: { type: String, required: true },
+  date: { type: Date, required: true },
+  location: { type: String, required: true },
+  img: { type: String, default: "" },
+  participantsIds: [{ type: String, ref: "users" }],
+  likes_number: { type: Number, default: 0 },
+  comments_number: { type: Number, default: 0 },
 });
 
-const postModel = mongoose.model<iPost>("posts", postSchema);
-
-export default postModel;
+export default mongoose.model<iPost>("posts", postSchema);

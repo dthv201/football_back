@@ -1,13 +1,13 @@
+// FILE: controllers/posts_controller.ts
 import postModel, { iPost } from "../models/posts_model";
-import { Request, Response } from "express";
-import  BaseController  from "./base_controller";
+import BaseController from "./base_controller";
 
 class PostController extends BaseController<iPost> {
-    constructor() {
-        super(postModel);
-    }
+  constructor() {
+    super(postModel);
+  }
 
-
+  // If you need specialized methods for posts, define them here.
 }
 
 export default new PostController();
