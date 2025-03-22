@@ -483,11 +483,29 @@ export const authMiddleware = (req: Request, res: Response, next: NextFunction) 
     });
 };
 
+export const getParticipants = async (req: Request, res: Response) => {
+  try {
+      const participantIds = req.body;
+
+      if (!Array.isArray(participantIds) || participantIds.length === 0) {
+          res.status(400).json({ error: "Invalid or empty participantIds array" });
+          return;
+      }
+
+      const participants = await userModel.find({ _id: { $in: participantIds } }).select("-password -refreshToken");
+
+      res.status(200).json(participants);
+  } catch (error) {
+      console.error("Error fetching participants:", error);
+      res.status(500).json({ error: "Internal server error" });
+  }
+};
+
 export default {
     googleSignin,
     login,
     refresh,
     logout,
     fetchUser,
-    
+    getParticipants,
 };

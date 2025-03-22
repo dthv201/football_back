@@ -251,4 +251,50 @@ router.post("/refresh", authController.refresh);
  */
 router.post("/logout", authController.logout);
 
+/**
+ * @swagger
+ * /auth/getParticipants:
+ *   post:
+ *     summary: Retrieve a list of participants by their IDs
+ *     tags: [Users]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               participantIds:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 example: ["67d9e62bd9ced8c054fe6836", "67d9e62bd9ced8c054fe6837"]
+ *     responses:
+ *       200:
+ *         description: A list of participants
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   _id:
+ *                     type: string
+ *                   username:
+ *                     type: string
+ *                   skillLevel:
+ *                     type: string
+ *                     enum: [Beginner, Intermediate, Advanced]
+ *                   email:
+ *                     type: string
+ *                   profile_img:
+ *                     type: string
+ *       400:
+ *         description: Invalid request body
+ *       500:
+ *         description: Internal server error
+ */
+router.post("/getParticipants", authMiddleware, authController.getParticipants);
+
 export default router;
