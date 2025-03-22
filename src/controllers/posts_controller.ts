@@ -11,9 +11,9 @@ class PostController extends BaseController<iPost> {
 
     async addParticipant(req: Request, res: Response) {
         try {
-            const { postId, participantId } = req.body;
+            const { postId, userId } = req.body;
 
-            if (!postId || !participantId) {
+            if (!postId || !userId) {
                 res.status(400).json({ error: "Missing postId or participantId" });
                 return;
             }
@@ -24,12 +24,12 @@ class PostController extends BaseController<iPost> {
                 return
             }
 
-            if (post.participantsIds?.includes(participantId)) {
+            if (post.participantsIds?.includes(userId)) {
                 res.status(400).json({ error: "Participant already added" });
                 return;
             }
 
-            post.participantsIds?.push(participantId);
+            post.participantsIds?.push(userId);
             await post.save();
 
             res.status(200).json({ message: "Participant added successfully", post });
@@ -40,9 +40,9 @@ class PostController extends BaseController<iPost> {
 
     async removeParticipant(req: Request, res: Response) {
         try {
-            const { postId, participantId } = req.body;
+            const { postId, userId } = req.body;
 
-            if (!postId || !participantId) {
+            if (!postId || !userId) {
                 res.status(400).json({ error: "Missing postId or participantId" });
                 return;
             }
@@ -53,12 +53,12 @@ class PostController extends BaseController<iPost> {
                 return;
             }
 
-            if (!post.participantsIds?.includes(participantId)) {
+            if (!post.participantsIds?.includes(userId)) {
                 res.status(400).json({ error: "Participant not found in the group" });
                 return;
             }
 
-            post.participantsIds = post.participantsIds.filter(id => id !== participantId);
+            post.participantsIds = post.participantsIds.filter(id => id !== userId);
             await post.save();
 
             res.status(200).json({ message: "Participant removed successfully", post });
@@ -76,7 +76,7 @@ class PostController extends BaseController<iPost> {
                 return;
             }
 
-            const post = await postModel.findById(postId).populate("participantsIds");
+            const post = await postModel.findById(postId);
 
             if (!post) {
                 res.status(404).json({ message: "Post not found" });
@@ -96,22 +96,23 @@ class PostController extends BaseController<iPost> {
             }
 
             const players: Player[] = participants.map((participant) => ({
-                _id: participant._id.toString(),
+                _id: participant._id,
                 username: participant.username,
                 skillLevel: participant.skillLevel?.toString() || SkillLevel.INTERMEDIATE.toString(),
             }));
 
             const result = await splitUsersIntoBalancedTeams(players);
 
+            post.teamA = result?.teamA.map(player => player._id?.toString()).filter((id): id is string => id !== undefined);
+            post.teamB = result?.teamB.map(player => player._id?.toString()).filter((id): id is string => id !== undefined);
+            await post.save();   
+
             if (!result) {
                 res.status(500).json({ message: "Failed to split users into teams" });
                 return;
             }
 
-            res.status(200).json({
-                message: "Teams split successfully",
-                teams: result,
-            });
+            res.status(200).json(post);
         } catch (error) {
             console.error("Error splitting teams:", error);
             res.status(500).json({ message: "Internal server error" });

@@ -7,6 +7,8 @@ export interface iPost extends Document {
   date: Date;
   location: string;
   participantsIds?: string[]; 
+  teamA?: string[];
+  teamB?: string[];
   img?: string;
   likes_number?: number;
   comments_number?: number;
@@ -27,6 +29,18 @@ const postSchema = new Schema<iPost>({
     required: true,
   },
   participantsIds: [
+    {
+      type: String,
+      ref: "users",
+    },
+  ],
+  teamA: [
+    {
+      type: String,
+      ref: "users",
+    },
+  ],
+  teamB: [
     {
       type: String,
       ref: "users",
