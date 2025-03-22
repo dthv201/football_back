@@ -6,29 +6,24 @@ export interface iPost extends Document {
   content: string;
   date: Date;
   location: string;
-  participantsIds?: string[]; 
+  img?: string;
+  participantsIds?: string[];
   teamA?: string[];
   teamB?: string[];
-  img?: string;
   likesUsersIds?: string[];
   likes_number?: number;
   comments_number?: number;
 }
 
 const postSchema = new Schema<iPost>({
-  title: {
-    type: String,
-    required: true,
-  },
-  img: {
-    type: String,
-    default: "", 
-  },
+  title: { type: String, required: true },
   owner: {
     type: String,
     ref: "users",
     required: true,
   },
+  // Merged: include participantsIds, teamA, teamB, and likesUsersIds from HEAD,
+  // and img field from the other branch.
   participantsIds: [
     {
       type: String,
@@ -47,34 +42,18 @@ const postSchema = new Schema<iPost>({
       ref: "users",
     },
   ],
-  content: {
-    type: String,
-    required: true,
-  },
-  date: {
-    type: Date,
-    required: true,
-  },
-  location: {
-    type: String,
-    required: true,
-  },
+  content: { type: String, required: true },
+  date: { type: Date, required: true },
+  location: { type: String, required: true },
+  img: { type: String, default: "" },
   likesUsersIds: [
     {
       type: String,
       ref: "users",
     },
   ],
-  likes_number: {
-    type: Number,
-    default: 0,
-  },
-  comments_number: {
-    type: Number,
-    default: 0,
-  },
+  likes_number: { type: Number, default: 0 },
+  comments_number: { type: Number, default: 0 },
 });
 
-const postModel = mongoose.model<iPost>("posts", postSchema);
-
-export default postModel;
+export default mongoose.model<iPost>("posts", postSchema);

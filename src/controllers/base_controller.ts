@@ -38,7 +38,7 @@ class BaseController<T> {
     };
 
     async create(req: Request, res: Response) {
-      console.log("req.body in create comment:", req.body);
+      console.log("req.body in create :", req.body);
         const body = req.body;
         try {
             const item = await this.model.create(body);   
