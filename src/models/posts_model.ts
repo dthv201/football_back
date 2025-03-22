@@ -10,6 +10,7 @@ export interface iPost extends Document {
   teamA?: string[];
   teamB?: string[];
   img?: string;
+  likesUsersIds?: string[];
   likes_number?: number;
   comments_number?: number;
 }
@@ -58,6 +59,12 @@ const postSchema = new Schema<iPost>({
     type: String,
     required: true,
   },
+  likesUsersIds: [
+    {
+      type: String,
+      ref: "users",
+    },
+  ],
   likes_number: {
     type: Number,
     default: 0,

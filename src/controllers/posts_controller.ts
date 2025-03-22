@@ -105,7 +105,7 @@ class PostController extends BaseController<iPost> {
 
             post.teamA = result?.teamA.map(player => player._id?.toString()).filter((id): id is string => id !== undefined);
             post.teamB = result?.teamB.map(player => player._id?.toString()).filter((id): id is string => id !== undefined);
-            await post.save();   
+            await post.save();
 
             if (!result) {
                 res.status(500).json({ message: "Failed to split users into teams" });
@@ -116,6 +116,32 @@ class PostController extends BaseController<iPost> {
         } catch (error) {
             console.error("Error splitting teams:", error);
             res.status(500).json({ message: "Internal server error" });
+        }
+    }
+
+    async handleLike(req: Request, res: Response): Promise<void> {
+        const { postId } = req.body;
+
+        try {
+            const post = await this.model.findById(postId);
+            if (!post) {
+                res.status(404).send('Post not found');
+                return;
+            }
+
+            if (post.likesUsersIds?.includes(req.body.userId)) {
+                post.likesUsersIds = post.likesUsersIds.filter(
+                    (id: any) => id.toString() !== req.body.userId.toString()
+                ) as any;
+            } else {
+                post.likesUsersIds?.push(req.body.userId);
+            }
+            post.likes_number = post.likesUsersIds?.length;
+            
+            await post.save();
+            res.status(200).send(post);
+        } catch (error) {
+            res.status(400).send(error);
         }
     }
 }

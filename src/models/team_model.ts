@@ -1,16 +1,16 @@
 import mongoose, { Schema, Document } from "mongoose";
 
 export interface ITeam extends Document {
-  postId: string;
-  teamA: string[];
-  teamB: string[];
+  name: string;
+  manager: mongoose.Types.ObjectId;
+  players: mongoose.Types.ObjectId[];
   maxPlayers: number;
 }
 
 const teamSchema = new Schema<ITeam>({
-  postId: { type: String, required: true, unique: true },
-  teamA: [{ type: String }],
-  teamB: [{ type: String }],
+  name: { type: String, required: true, unique: true },
+  manager: { type: Schema.Types.ObjectId, ref: "User", required: true },
+  players: [{ type: Schema.Types.ObjectId, ref: "User" }],
   maxPlayers: { type: Number, default: 10 },
 });
 
