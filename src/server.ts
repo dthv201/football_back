@@ -1,5 +1,6 @@
 import express, { Express, NextFunction, Request, Response } from "express";
 import dotenv from "dotenv";
+dotenv.config();
 import mongoose from "mongoose";
 import postsRoutes from "./routes/posts_route";
 import commentsRoutes from "./routes/comments_route";
@@ -9,7 +10,7 @@ import swaggerUI from "swagger-ui-express";
 import swaggerJsDoc from "swagger-jsdoc";
 import cors from "cors";
 
-dotenv.config();
+
 
 const app = express();
 

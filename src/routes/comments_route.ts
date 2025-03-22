@@ -157,7 +157,7 @@ router.put("/:id", authMiddleware, commentsController.update.bind(commentsContro
 router.delete("/:id", authMiddleware, commentsController.deleteItem.bind(commentsController));
 /**
  * @swagger
- * /posts/{postId}/comments:
+ * /comments/posts/{postId}:
  *   get:
  *     summary: Retrieve comments for a specific post.
  *     description: Retrieves all comments associated with the given post ID.
