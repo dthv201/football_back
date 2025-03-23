@@ -307,13 +307,13 @@ router.post("/split-teams", authMiddleware, postsController.splitParticipantsInt
 
 /**
  * @swagger
- * /posts/like:
+ * /posts/like/{postId}:
  *   post:
- *     summary: like and unlike post by userId
- *     description: like and unlike single post by userId
+ *     summary: Like or unlike a post
+ *     description: Toggles a like on a post by the current user.
  *     tags: [Posts]
  *     security:
- *       - bearerUser: []
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: postId

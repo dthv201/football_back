@@ -101,29 +101,31 @@ class PostController extends BaseController<iPost> {
     }
   }
 
-  // Handle like/unlike of a post
   async handleLike(req: Request, res: Response): Promise<void> {
-    const { postId, userId } = req.body;
+    const { postId } = req.body;
+
     try {
-      const post = await this.model.findById(postId);
-      if (!post) {
-        res.status(404).send("Post not found");
-        return;
-      }
-      if (post.likesUsersIds?.includes(userId)) {
-        post.likesUsersIds = post.likesUsersIds.filter(
-          (id: any) => id.toString() !== userId.toString()
-        );
-      } else {
-        post.likesUsersIds = post.likesUsersIds ? [...post.likesUsersIds, userId] : [userId];
-      }
-      post.likes_number = post.likesUsersIds?.length;
-      await post.save();
-      res.status(200).send(post);
+        const post = await this.model.findById(postId);
+        if (!post) {
+            res.status(404).send('Post not found');
+            return;
+        }
+
+        if (post.likesUsersIds?.includes(req.body.userId)) {
+            post.likesUsersIds = post.likesUsersIds.filter(
+                (id: any) => id.toString() !== req.body.userId.toString()
+            ) as any;
+        } else {
+            post.likesUsersIds?.push(req.body.userId);
+        }
+        post.likes_number = post.likesUsersIds?.length;
+
+        await post.save();
+        res.status(200).send(post);
     } catch (error) {
-      res.status(400).send(error);
+        res.status(400).send(error);
     }
-  }
+}
 }
 
 export default new PostController();
