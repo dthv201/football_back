@@ -1,0 +1,23 @@
+# Use the MongoDB installation provided on the server.
+# Note: The password contains an '@' so we URL-encode it as %40.
+DB_CONNECTION="mongodb://admin:bartar20%40CS@127.0.0.1:21771/football_db"
+
+# Token settings – keep these as they are unless you want to change token expirations.
+TOKEN_EXPIRES="60000m"
+REFRESH_TOKEN_EXPIRES="7d"
+TOKEN_SECRET="78d7a711fbfc98939672db6805f7342956e1cd6f98e5e2c67134a2a0cae4486b"
+
+# Application port.
+# You can use port 80 (accessible from outside without VPN) if you wish.
+PORT=80
+
+# Set the environment to production.
+NODE_ENV=production
+
+# Domain base – change from localhost to the public domain provided by the college.
+DOMAIN_BASE='http://node91.cs.colman.ac.il'
+
+# Google OAuth credentials and AI API key (if these work for production, otherwise update as needed).
+GOOGLE_CLIENT_ID="11628811755-3h5chkudcija2n54833e2kvrmbp1jvtg.apps.googleusercontent.com"
+GOOGLE_CLIENT_SECRET="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"
+AI_API_KEY="AIzaSyAzooKc9CD-nRvAWpClrz6k7_86dSwo3ZA"
