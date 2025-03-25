@@ -22,7 +22,7 @@ const fetchUser = async (req: Request, res: Response, next: NextFunction): Promi
         res.status(404).json({ error: 'User not found' });
         return;
       }
-      console.log("User found:", user);
+      // console.log("User found:", user);
       res.status(200).json(user);
       return;
 

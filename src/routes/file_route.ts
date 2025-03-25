@@ -27,7 +27,7 @@ router.post("/", upload.single("file"), (req, res) => {
   // On Windows, replace backslashes with forward slashes
   const filePath = req.file.path.replace(/\\/g, "/");
 
-  const baseUrl = process.env.DOMAIN_BASE || "http://localhost:3000";
+  const baseUrl = process.env.DOMAIN_BASE ;
   const fullUrl = `${baseUrl}/${filePath}`;
 
   console.log("File uploaded:", fullUrl);

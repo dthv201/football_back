@@ -8,7 +8,7 @@ export class CommentsController extends BaseController<IComment> {
     super(commentsModel);
 }
 async getCommentsByPostId(req: Request, res: Response){
-  const postId = req.query.postId;
+  const postId = req.params.postId;
         try {
             if (postId) {
                 const item = await this.model.find({ postId: postId });

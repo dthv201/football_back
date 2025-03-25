@@ -12,9 +12,11 @@ class BaseController<T> {
         try {
             if (filter) {
                 const item = await this.model.find({ owner: filter });
+                
                 res.send(item);
             } else {
                 const items = await this.model.find();
+                console.log("item in getall :", items);
                 res.send(items);
             }
         } catch (error) {

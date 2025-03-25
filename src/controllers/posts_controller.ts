@@ -103,7 +103,7 @@ class PostController extends BaseController<iPost> {
 
   async handleLike(req: Request, res: Response): Promise<void> {
     const { postId } = req.body;
-
+    console.log(req.body);
     try {
         const post = await this.model.findById(postId);
         if (!post) {

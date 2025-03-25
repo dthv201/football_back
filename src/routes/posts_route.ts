@@ -95,7 +95,7 @@ router.get("/:id", authMiddleware, postsController.getById.bind(postsController)
 router.post(
   "/",
   authMiddleware,
-  postsController.create.bind(postsController) // <-- No multer upload here
+  postsController.create.bind(postsController) 
 );
 
 /**
