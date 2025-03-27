@@ -102,7 +102,7 @@ class PostController extends BaseController<iPost> {
   }
 
   async handleLike(req: Request, res: Response): Promise<void> {
-    const { postId } = req.body;
+    const { postId, userId } = req.body;
     console.log(req.body);
     try {
         const post = await this.model.findById(postId);
@@ -111,7 +111,7 @@ class PostController extends BaseController<iPost> {
             return;
         }
 
-        if (post.likesUsersIds?.includes(req.body.userId)) {
+        if (post.likesUsersIds?.includes(userId)) {
             post.likesUsersIds = post.likesUsersIds.filter(
                 (id: any) => id.toString() !== req.body.userId.toString()
             ) as any;

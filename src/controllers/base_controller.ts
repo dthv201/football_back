@@ -16,7 +16,7 @@ class BaseController<T> {
                 res.send(item);
             } else {
                 const items = await this.model.find();
-                console.log("item in getall :", items);
+              
                 res.send(items);
             }
         } catch (error) {
@@ -40,7 +40,7 @@ class BaseController<T> {
     };
 
     async create(req: Request, res: Response) {
-      console.log("req.body in create :", req.body);
+    
         const body = req.body;
         try {
             const item = await this.model.create(body);   

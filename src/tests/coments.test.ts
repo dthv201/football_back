@@ -96,6 +96,24 @@ describe("Comments test suite", () => {
       expect(response.statusCode).toBe(200);
     });
 
+    test("Get all the comment by the postId", async () => {
+      const response = await request(app)
+        .get(`/comments/posts/${testComment.postId}`)
+        .set("Authorization", `Bearer ${accessToken}`)
+      expect(response.statusCode).toBe(200);
+      expect(response.body).toHaveLength(1);
+    });
+
+    
+    test("Get the count of comments by postId", async () => {
+      const response = await request(app)
+        .get(`/comments/countComments/${testComment.postId}`)
+        .set("Authorization", `Bearer ${accessToken}`)
+
+      expect(response.statusCode).toBe(200);
+      expect(response.body).toHaveProperty("count", 1);
+    });
+
 
     test("Update a comment with auth", async () => {
       const updatedComment = {
@@ -116,13 +134,7 @@ describe("Comments test suite", () => {
       expect(response.body.owner).toBe(updatedComment.owner);
     });
 
-    test("Get all the comment by the postId", async () => {
-      const response = await request(app)
-        .get(`/comments/posts/${testComment.postId}`)
-        .set("Authorization", `Bearer ${accessToken}`)
-      expect(response.statusCode).toBe(200);
-      expect(response.body).toHaveLength(1);
-    });
+  
 
     
 
@@ -150,7 +162,7 @@ describe("Comments test suite", () => {
 
     test("Delete a non-existent comment with auth", async () => {
       const response = await request(app)
-        .delete(`/comments/${commentId}`)
+        .delete(`/comments/${testComment.postId}`)
         .set("Authorization", `Bearer ${accessToken}`);
       expect(response.statusCode).toBe(404);
       expect(response.body).toHaveProperty("message", "not found");
