@@ -132,3 +132,5 @@ dist
 *.env
 *.png
 .env_test
+*.txt
+.env.test
