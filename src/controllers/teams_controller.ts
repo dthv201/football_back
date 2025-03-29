@@ -17,7 +17,7 @@ class TeamController {
       const newTeam = new Team({
         name,
         manager: userId,
-        players: [userId], // המנהל הוא גם השחקן הראשון
+        players: [userId],
         maxPlayers: maxPlayers || 10,
       });
   

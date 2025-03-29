@@ -1,92 +1,123 @@
 import request from "supertest";
 import initApp from "../server";
 import mongoose from "mongoose";
-import postModel from "../models/posts_model";
-import { Express, NextFunction } from "express";
 import userModel, { IUser, SkillLevel } from "../models/users_model";
-
 import fs from "fs";
 import path from "path";
-
 import dotenv from "dotenv";
-import { authMiddleware } from "../controllers/auth_controller";
+import { Express } from "express";
 
-dotenv.config({ path: process.env.NODE_ENV === "test" ? ".env_test" : ".env" });
+dotenv.config({ path: process.env.NODE_ENV === "test" ? ".env.test" : ".env" });
 
-
-
-var app: Express;
+let app: Express;
 
 beforeAll(async () => {
   console.log("beforeAll");
   app = await initApp();
   await userModel.deleteMany();
 
-  // Ensure uploads folder is clean before tests run
+  // Clean up test uploads folder
   const uploadDir = path.resolve(__dirname, "../uploads/test");
   if (fs.existsSync(uploadDir)) {
-      fs.readdirSync(uploadDir).forEach((file) => {
-          if (file.startsWith("1740")) { 
-              const filePath = path.join(uploadDir, file);
-              fs.unlinkSync(filePath);
-          }
-      });
-      console.log(" Old test images deleted.");
+    fs.readdirSync(uploadDir).forEach((file) => {
+      if (file.startsWith("1740")) { 
+        const filePath = path.join(uploadDir, file);
+        fs.unlinkSync(filePath);
+      }
+    });
+    console.log("Old test images deleted.");
   }
 });
-
 
 afterAll(async () => {
   console.log("🧹 Cleaning up test uploads...");
-
   const testUploadDir = path.resolve(__dirname, "../uploads/test");
   if (fs.existsSync(testUploadDir)) {
-      fs.readdirSync(testUploadDir).forEach((file) => {
-          const filePath = path.join(testUploadDir, file);
-          fs.unlinkSync(filePath);
-      });
-      console.log(" All test images deleted.");
+    fs.readdirSync(testUploadDir).forEach((file) => {
+      const filePath = path.join(testUploadDir, file);
+      fs.unlinkSync(filePath);
+    });
+    console.log("All test images deleted.");
   } else {
-      console.log("⚠️ No uploaded test images found.");
+    console.log("⚠️ No uploaded test images found.");
   }
-
   await mongoose.connection.close();
 });
-
-
-
-
 
 const baseUrl = "/auth";
 
 type User = IUser & {
-  accessToken?: string,
-  refreshToken?: string
+  accessToken?: string;
+  refreshToken?: string;
+  _id?: string;
 };
 
 const testUser: User = {
   username: "test_no_img",
   email: "test_no_img@example.com",
   password: "password123",
-  skillLevel: SkillLevel.BEGINNER
-}
+  skillLevel: SkillLevel.BEGINNER,
+};
 
-describe("Auth Tests ", () => {
-
-  test(" Register user without profile image (should use default image)", async () => {
+describe("Auth Tests", () => {
+  test("Register user without profile image (should use default image)", async () => {
     const response = await request(app)
-        .post(baseUrl + "/register")
-        .send({
-            username: testUser.username,
-            email: testUser.email,
-            password: testUser.password,
-            skillLevel: testUser.skillLevel
-        });
-
+      .post(baseUrl + "/register")
+      .send({
+        username: testUser.username,
+        email: testUser.email,
+        password: testUser.password,
+        skillLevel: testUser.skillLevel,
+      });
     expect(response.statusCode).toBe(201);
     expect(response.body.user).toHaveProperty("_id");
-    expect(response.body.user.profile_img).toBe("https://cdn-icons-png.flaticon.com/512/3135/3135715.png"); 
-});
+    expect(response.body.user.profile_img).toBe(
+      "https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
+    );
+    testUser._id = response.body.user._id;
+  });
+
+  test("Login user to get access token", async () => {
+    const response = await request(app)
+      .post(baseUrl + "/login")
+      .send({ email: testUser.email, password: testUser.password });
+    expect(response.statusCode).toBe(200);
+    expect(response.body.accessToken).toBeDefined();
+    testUser.accessToken = response.body.accessToken;
+  });
+
+  // ---- fetchUser tests ----
+
+  test("should return 401 if no token is provided", async () => {
+    const res = await request(app)
+      .get(baseUrl + "/user")
+      .send();
+    expect(res.statusCode).toBe(401);
+  });
+
+  test("should return 401 and the authenticated user if a valid token is provided", async () => {
+    const res = await request(app)
+      .get(baseUrl + "/user")
+      .set("Authorization", `Bearer ${testUser.accessToken}`)
+      .send();
+    expect(res.statusCode).toBe(401);
+    expect(res.body._id).toBe(testUser._id);
+    expect(res.body).not.toHaveProperty("password");
+  });
+
+  test("should return 200 and the authenticated user if a valid token is provided", async () => {
+    const res = await request(app)
+      .get(baseUrl + "/user")
+      .set("Authorization", `Bearer ${testUser.accessToken}`)
+      .send({userId : testUser._id});
+    expect(res.statusCode).toBe(200);
+    expect(res.body._id).toBe(testUser._id);
+    expect(res.body).not.toHaveProperty("password");
+  });
+
+
+
+
 
 
   test(" Register user with profile image", async () => {

@@ -8,7 +8,7 @@ dotenv.config();
 const AI_API_KEY = process.env.AI_API_KEY;
 const genAI = new GoogleGenerativeAI(AI_API_KEY!);
 
-const requestLimit = pLimit(3); // maximum 3 requests at a time
+const requestLimit = pLimit(3); 
 
 export interface Player {
   _id?: string;
@@ -37,7 +37,7 @@ function delay(ms: number) {
 export async function splitUsersIntoBalancedTeams(
   players: Player[],
   retryCount = 2, 
-  delayMs = 500 // 500ms delay before retry Attempts
+  delayMs = 500 
 ): Promise<{ teamA: Player[]; teamB: Player[] } | null> {
   return requestLimit(async () => {
     try {
@@ -56,7 +56,6 @@ export async function splitUsersIntoBalancedTeams(
       const cleanText = extractJson(rawText);
       const output = JSON.parse(cleanText);
 
-      // Validate response structure
       if (!output.teamA || !output.teamB || !Array.isArray(output.teamA) || !Array.isArray(output.teamB)) {
         throw new Error("Invalid response structure");
       }
@@ -65,10 +64,10 @@ export async function splitUsersIntoBalancedTeams(
     } catch (error: any) {
       console.error("Error in API call:", error.message);
 
-      // Retry if rate limited (status code 429) or unknown error
+  
       if (error.response?.status === 429) {
         console.warn("Rate limit exceeded! Retrying after delay...");
-        await delay(5000); // המתנה של 5 שניות
+        await delay(5000);
         return splitUsersIntoBalancedTeams(players, retryCount, delayMs);
       }
 

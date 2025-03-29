@@ -14,7 +14,7 @@ const fetchUser = async (req: Request, res: Response, next: NextFunction): Promi
       const userId = req.params.userId;
 
       if(!userId) {
-        res.status(401).json({ error: 'Unauthorized: No user found in request' });
+        res.status(401).json({ error: 'No user found' });
         return;
       }
       const user = await userModel.findById(userId).select("-password"); ;
@@ -22,7 +22,7 @@ const fetchUser = async (req: Request, res: Response, next: NextFunction): Promi
         res.status(404).json({ error: 'User not found' });
         return;
       }
-      // console.log("User found:", user);
+     
       res.status(200).json(user);
       return;
 
