@@ -12,10 +12,7 @@ async getCommentsByPostId(req: Request, res: Response){
         try {
             if (postId) {
                 const item = await this.model.find({ postId: postId });
-                res.send(item);
-            } else {
-                const items = await this.model.find();
-                res.status(200).send(items);
+                res.status(200).send(item);
             }
         } catch (error) {
             res.status(400).send(error);

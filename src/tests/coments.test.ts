@@ -104,6 +104,14 @@ describe("Comments test suite", () => {
       expect(response.body).toHaveLength(1);
     });
 
+
+    test("Get the count of comments with no postId", async () => {
+      const response = await request(app)
+        .get(`/comments/countComments`)
+        .set("Authorization", `Bearer ${accessToken}`)
+      expect(response.statusCode).toBe(400);
+    
+    });
     
     test("Get the count of comments by postId", async () => {
       const response = await request(app)
@@ -113,6 +121,8 @@ describe("Comments test suite", () => {
       expect(response.statusCode).toBe(200);
       expect(response.body).toHaveProperty("count", 1);
     });
+
+
 
 
     test("Update a comment with auth", async () => {
@@ -167,6 +177,8 @@ describe("Comments test suite", () => {
       expect(response.statusCode).toBe(404);
       expect(response.body).toHaveProperty("message", "not found");
     });
+
+    
 
 
   
