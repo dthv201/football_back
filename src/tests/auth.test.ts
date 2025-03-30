@@ -95,15 +95,6 @@ describe("Auth Tests", () => {
     expect(res.statusCode).toBe(401);
   });
 
-  test("should return 401 and the authenticated user if a valid token is provided", async () => {
-    const res = await request(app)
-      .get(baseUrl + "/user")
-      .set("Authorization", `Bearer ${testUser.accessToken}`)
-      .send();
-    expect(res.statusCode).toBe(401);
-    expect(res.body._id).toBe(testUser._id);
-    expect(res.body).not.toHaveProperty("password");
-  });
 
   test("should return 200 and the authenticated user if a valid token is provided", async () => {
     const res = await request(app)
