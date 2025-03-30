@@ -1,7 +1,7 @@
 // FILE: server.ts
 import express, { Express, Request, Response, NextFunction } from "express";
 import dotenv from "dotenv";
-dotenv.config({ path: process.env.NODE_ENV === "test" ? ".env.test" : ".env" });
+
 
 import mongoose from "mongoose";
 import cors from "cors";
@@ -15,7 +15,7 @@ import fileRouter from "./routes/file_route";
 
 const app = express();
 
-if (process.env.NODE_ENV === "development") {
+if (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "production") {
   const options = {
     definition: {
       openapi: "3.0.0",
@@ -24,7 +24,11 @@ if (process.env.NODE_ENV === "development") {
         version: "1.0.0",
         description: "REST server including authentication using JWT",
       },
-      servers: [{ url: "http://localhost:3000" }],
+      servers: [
+        { url: "http://localhost:"+ process.env.PORT },
+         { url: "http://10.10.246.91"},  
+         { url: "https://10.10.246.91"}
+        ],
     },
     apis: ["./src/routes/*.ts"],
   };

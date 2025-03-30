@@ -7,7 +7,7 @@ import path from "path";
 import dotenv from "dotenv";
 import { Express } from "express";
 
-dotenv.config({ path: process.env.NODE_ENV === "test" ? ".env.test" : ".env" });
+dotenv.config({ path: process.env.NODE_ENV === "test" ? ".env_test" : ".env" });
 
 let app: Express;
 
