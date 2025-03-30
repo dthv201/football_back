@@ -1,16 +1,17 @@
 // FILE: server.ts
 import express, { Express, Request, Response, NextFunction } from "express";
 import dotenv from "dotenv";
-dotenv.config();
+dotenv.config({ path: process.env.NODE_ENV === "test" ? ".env.test" : ".env" });
+
 import mongoose from "mongoose";
 import cors from "cors";
 import swaggerUI from "swagger-ui-express";
 import swaggerJsDoc from "swagger-jsdoc";
 
 import postsRoutes from "./routes/posts_route";
-import commentsRoutes from "./routes/comments_route"; // optional
-import authRoutes from "./routes/auth_route"; // optional
-import fileRouter from "./routes/file_route"; // the file upload route
+import commentsRoutes from "./routes/comments_route"; 
+import authRoutes from "./routes/auth_route";
+import fileRouter from "./routes/file_route"; 
 
 const app = express();
 

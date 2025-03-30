@@ -22,8 +22,6 @@ const postSchema = new Schema<iPost>({
     ref: "users",
     required: true,
   },
-  // Merged: include participantsIds, teamA, teamB, and likesUsersIds from HEAD,
-  // and img field from the other branch.
   participantsIds: [
     {
       type: String,
