@@ -13,6 +13,7 @@ import commentsRoutes from "./routes/comments_route";
 import authRoutes from "./routes/auth_route";
 import fileRouter from "./routes/file_route"; 
 
+
 const app = express();
 
 if (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "production") {
@@ -25,13 +26,15 @@ if (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "producti
         description: "REST server including authentication using JWT",
       },
       servers: [
-        { url: "http://localhost:"+ process.env.PORT },
-         { url: "http://10.10.246.91"},  
-         { url: "https://10.10.246.91"}
-        ],
+        { url: "http://localhost:" + process.env.PORT },
+        { url: "http://10.10.246.91" },
+        { url: "https://10.10.246.91" },
+      ],
+      security: [],
     },
     apis: ["./src/routes/*.ts"],
   };
+
   const specs = swaggerJsDoc(options);
   app.use("/api-docs", swaggerUI.serve, swaggerUI.setup(specs));
 }
@@ -57,7 +60,7 @@ async function initApp(): Promise<Express> {
   app.use("/uploads", express.static("uploads"));
 
   // 3) Additional middlewares or headers
-  app.use((req, res, next) => {
+  app.use((req: Request, res:Response, next:NextFunction) => {
     res.setHeader("Access-Control-Allow-Origin", "*");
     res.setHeader("Access-Control-Allow-Methods", "*");
     res.setHeader("Access-Control-Allow-Headers", "*");

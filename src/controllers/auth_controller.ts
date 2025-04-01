@@ -372,9 +372,13 @@ const generateToken = (userId: string): tTokens | null => {
     }
 
     // Use longer expiration times in test environment
+    require('dotenv').config();
     const accessExpiration = process.env.NODE_ENV === "test" ? "30d" : process.env.TOKEN_EXPIRES;
     const refreshExpiration = process.env.NODE_ENV === "test" ? "60d" : process.env.REFRESH_TOKEN_EXPIRES;
 
+    if (!accessExpiration) {
+      return null;
+  }
     const random = Math.random().toString();
     
     const accessToken = jwt.sign(
@@ -386,7 +390,7 @@ const generateToken = (userId: string): tTokens | null => {
     const refreshToken = jwt.sign(
         { _id: userId, random },
         process.env.TOKEN_SECRET,
-        { expiresIn: refreshExpiration }
+        { expiresIn: refreshExpiration}
     );
 
     return { accessToken, refreshToken };

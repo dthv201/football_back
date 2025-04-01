@@ -5,6 +5,7 @@ import postModel from "../models/posts_model";
 import { Express } from "express";
 import jwt from "jsonwebtoken";
 import { MongoMemoryServer } from "mongodb-memory-server";
+import { afterAll, beforeAll, describe, expect, test } from "@jest/globals";
 
 let app: Express;
 let accessToken: string;

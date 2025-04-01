@@ -5,6 +5,7 @@ import commentsModel from "../models/comments_model";
 import { CommentsController } from '../controllers/comments_controller';
 import { Express } from "express";
 import jwt from "jsonwebtoken";
+import { afterAll, beforeAll, describe, expect, test } from "@jest/globals";
 
 let app: Express;
 let accessToken: string; 

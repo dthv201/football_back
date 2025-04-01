@@ -29,6 +29,53 @@ const upload = multer({ storage: storage });
  *   name: Auth
  *   description: API for authentication and authorization
  */
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     User:
+ *       type: object
+ *       properties:
+ *         _id:
+ *           type: string
+ *           description: Unique identifier for the user.
+ *         username:
+ *           type: string
+ *           description: The user's username.
+ *         email:
+ *           type: string
+ *           description: The user's email address.
+ *         password:
+ *           type: string
+ *           description: The user's password.
+ *         skillLevel:
+ *           type: string
+ *           enum: [Beginner, Intermediate, Advanced]
+ *           description: The user's skill level. Defaults to "Beginner" if not provided.
+ *         refreshToken:
+ *           type: array
+ *           items:
+ *             type: string
+ *           description: An array of refresh tokens.
+ *         profile_img:
+ *           type: string
+ *           description: URL to the user's profile image.
+ *       required:
+ *         - username
+ *         - email
+ *         - password
+ *       example:
+ *         _id: "615f1b2e12f1b1a1a1a1a1a1"
+ *         username: "JohnDoe"
+ *         email: "john.doe@example.com"
+ *         password: "hashed_password_here"
+ *         skillLevel: "Beginner"
+ *         refreshToken: ["refresh_token1", "refresh_token2"]
+ *         profile_img: "https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
+ */
+
+
+
 
 /**
  * @swagger
